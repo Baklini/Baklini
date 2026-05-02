@@ -101,10 +101,26 @@
     border-radius: 16px; overflow: hidden; margin-bottom: 14px;
   }
   .item-photo {
-    width: 100%; height: 200px; background: var(--cedar-pale);
+    width: 100%; height: 220px; background: var(--cedar-pale);
     display: flex; align-items: center; justify-content: center; font-size: 60px;
+    position: relative; overflow: hidden;
   }
   .item-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  /* Carousel */
+  .photo-carousel { position: relative; width: 100%; height: 220px; overflow: hidden; background: var(--cedar-pale); }
+  .carousel-track { display: flex; height: 100%; transition: transform 0.3s ease; }
+  .carousel-track img { flex-shrink: 0; width: 100%; height: 100%; object-fit: cover; }
+  .carousel-btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: rgba(0,0,0,0.45); color: white; border: none;
+    border-radius: 50%; width: 32px; height: 32px; font-size: 16px;
+    cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center;
+  }
+  .carousel-prev { left: 8px; }
+  .carousel-next { right: 8px; }
+  .carousel-dots { position: absolute; bottom: 8px; left: 0; right: 0; display: flex; justify-content: center; gap: 5px; }
+  .carousel-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.5); }
+  .carousel-dot.active { background: white; }
   .item-body { padding: 16px; }
   .item-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
   .item-name { font-size: 17px; font-weight: 700; line-height: 1.3; flex: 1; }
@@ -397,9 +413,22 @@ function renderItems(items) {
     const bidCount = itemBids.length;
     const effectiveMin = topBid ? topBid.amount + 10 : (item.minBid || null);
 
-    const photoEl = item.photo
-      ? `<div class="item-photo"><img src="${item.photo}" alt="${item.name}"></div>`
-      : `<div class="item-photo">${getCatEmoji(item.category)}</div>`;
+    const photos = item.photos?.length ? item.photos : (item.photo ? [item.photo] : []);
+    let photoEl;
+    if (photos.length > 1) {
+      const dots = photos.map((_,i) => `<div class="carousel-dot${i===0?' active':''}"></div>`).join('');
+      const imgs = photos.map(p => `<img src="${p}" alt="${item.name}">`).join('');
+      photoEl = `<div class="photo-carousel" id="carousel-${item.id}">
+        <div class="carousel-track" id="track-${item.id}">${imgs}</div>
+        <button class="carousel-btn carousel-prev" onclick="carouselMove(${item.id},-1)">‹</button>
+        <button class="carousel-btn carousel-next" onclick="carouselMove(${item.id},1)">›</button>
+        <div class="carousel-dots" id="dots-${item.id}">${dots}</div>
+      </div>`;
+    } else if (photos.length === 1) {
+      photoEl = `<div class="item-photo"><img src="${photos[0]}" alt="${item.name}"></div>`;
+    } else {
+      photoEl = `<div class="item-photo">${getCatEmoji(item.category)}</div>`;
+    }
 
     const notesHtml = item.notes ? `<div class="item-notes">📋 ${item.notes}</div>` : '';
 
@@ -586,7 +615,21 @@ function placeBid(itemId, listPrice) {
   applyFilters();
 }
 
-function showToast(msg, isError = false) {
+const carouselState = {};
+function carouselMove(id, dir) {
+  if (!carouselState[id]) carouselState[id] = 0;
+  const track = document.getElementById('track-' + id);
+  const dots = document.getElementById('dots-' + id);
+  const total = track.children.length;
+  let idx = carouselState[id] + dir;
+  if (idx < 0) idx = total - 1;
+  if (idx >= total) idx = 0;
+  carouselState[id] = idx;
+  track.style.transform = `translateX(-${idx * 100}%)`;
+  dots.querySelectorAll('.carousel-dot').forEach((d,i) => d.classList.toggle('active', i===idx));
+}
+
+
   const t = document.getElementById('toast');
   t.textContent = msg; t.style.background = isError ? 'var(--danger)' : 'var(--cedar)';
   t.classList.add('show');
