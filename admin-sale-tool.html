@@ -182,7 +182,15 @@
     </div>
     <div class="photo-hint">Tap any slot to add a photo. First photo = main listing image. AI analyzes the first photo.</div>
 
-    <input type="hidden" id="api-key-input" value="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">
+    <div style="margin-bottom:14px;">
+      <div style="font-size:12px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">🔑 Anthropic API Key</div>
+      <div style="font-size:11px;color:var(--ink-soft);margin-bottom:8px;">Enter once — saved on this device only. Get yours at <strong>console.anthropic.com</strong> → API Keys.</div>
+      <div style="display:flex;gap:8px;">
+        <input type="password" id="api-key-input" placeholder="sk-ant-..." style="flex:1;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--ink);outline:none;font-family:monospace;background:white;">
+        <button onclick="saveApiKey()" style="background:var(--cedar);color:white;border:none;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;">Save</button>
+      </div>
+      <div id="key-status" style="font-size:11px;margin-top:5px;color:var(--ink-soft);"></div>
+    </div>
 
     <button class="ai-analyze-btn" id="analyze-btn" onclick="analyzeWithAI()" disabled>
       ✨ Analyze with AI & Get Pricing
@@ -317,15 +325,25 @@ const MAX_PHOTOS = 6;
 // ── Init ──
 window.onload = () => {
   const saved = localStorage.getItem(API_KEY_STORAGE);
-  if (saved) document.getElementById('api-key-input').value = saved;
+  if (saved) {
+    document.getElementById('api-key-input').value = saved;
+    document.getElementById('key-status').textContent = '✅ Key saved — ready to analyze';
+    document.getElementById('key-status').style.color = 'var(--cedar)';
+  }
   renderPhotoSlots();
   updateBadge();
 };
 
 function saveApiKey() {
   const key = document.getElementById('api-key-input').value.trim();
-  if (!key) { showToast('Paste your API key first', true); return; }
+  if (!key.startsWith('sk-ant-')) { 
+    document.getElementById('key-status').textContent = '⚠️ That doesn\'t look right — should start with sk-ant-';
+    document.getElementById('key-status').style.color = 'var(--danger)';
+    return; 
+  }
   localStorage.setItem(API_KEY_STORAGE, key);
+  document.getElementById('key-status').textContent = '✅ Key saved — ready to analyze';
+  document.getElementById('key-status').style.color = 'var(--cedar)';
   showToast('✅ API key saved!');
 }
 
@@ -448,8 +466,10 @@ Price based on US secondhand market (Facebook Marketplace/OfferUp). Be realistic
     });
 
     if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err.error?.message || `API error ${response.status}`);
+      const errText = await response.text().catch(() => '');
+      let errMsg = `HTTP ${response.status}`;
+      try { const j = JSON.parse(errText); errMsg = j.error?.message || errMsg; } catch {}
+      throw new Error(errMsg + (errText && !errText.includes(errMsg) ? ' — ' + errText.slice(0,120) : ''));
     }
 
     const data = await response.json();
