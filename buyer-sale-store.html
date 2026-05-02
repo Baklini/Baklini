@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baklini Home Sale — Shop</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cedar: #2D4A3E;
+    --cedar-light: #3D6354;
+    --cedar-pale: #EAF2EE;
+    --gold: #C9973A;
+    --ink: #1A1A1A;
+    --ink-soft: #666;
+    --border: #D8E4DF;
+    --surface: #F7FAF8;
+    --danger: #C0392B;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--surface); color: var(--ink);
+    min-height: 100vh; padding-bottom: 80px;
+  }
+
+  /* Gate */
+  #name-gate {
+    position: fixed; inset: 0; background: var(--cedar); z-index: 300;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 32px; text-align: center;
+  }
+  .gate-logo { font-size: 52px; margin-bottom: 18px; }
+  .gate-title { font-size: 26px; font-weight: 800; color: white; margin-bottom: 6px; }
+  .gate-sub { font-size: 14px; color: rgba(255,255,255,.72); margin-bottom: 28px; line-height: 1.6; }
+  .gate-input {
+    width: 100%; max-width: 320px; border: 2px solid rgba(255,255,255,.25);
+    background: rgba(255,255,255,.1); color: white; border-radius: 14px;
+    padding: 15px 18px; font-size: 17px; text-align: center; outline: none;
+    margin-bottom: 10px; font-family: inherit;
+  }
+  .gate-input::placeholder { color: rgba(255,255,255,.38); }
+  .gate-input:focus { border-color: var(--gold); }
+  .gate-btn {
+    width: 100%; max-width: 320px; background: var(--gold); color: white;
+    border: none; border-radius: 14px; padding: 15px; font-size: 16px;
+    font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+  .gate-rules {
+    margin-top: 22px; max-width: 320px; background: rgba(255,255,255,.07);
+    border-radius: 12px; padding: 14px 16px; font-size: 12px;
+    color: rgba(255,255,255,.68); text-align: left; line-height: 1.9;
+  }
+
+  /* Hero */
+  .hero {
+    background: var(--cedar); color: white;
+    padding: 24px 20px 18px; text-align: center;
+  }
+  .hero-badge {
+    display: inline-block; background: var(--gold); color: white;
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; padding: 4px 14px; border-radius: 20px; margin-bottom: 10px;
+  }
+  .hero h1 { font-size: 24px; font-weight: 800; }
+  .hero-sub { font-size: 13px; opacity: .78; margin-top: 5px; }
+  .hero-rules {
+    background: rgba(255,255,255,.1); border-radius: 12px;
+    padding: 11px 15px; margin-top: 14px; font-size: 12px; line-height: 1.8; text-align: left;
+  }
+
+  /* Filters */
+  .filters-wrap {
+    padding: 12px 16px 8px; background: white;
+    border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50;
+  }
+  .search-box {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 10px 14px; margin-bottom: 10px;
+  }
+  .search-box input { flex: 1; background: none; border: none; outline: none; font-size: 15px; color: var(--ink); }
+  .filters { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+  .filters::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    white-space: nowrap; padding: 7px 14px; border-radius: 20px; font-size: 12px;
+    font-weight: 600; border: 1.5px solid var(--border); background: white;
+    color: var(--ink-soft); cursor: pointer; flex-shrink: 0;
+  }
+  .filter-chip.active { background: var(--cedar); color: white; border-color: var(--cedar); }
+  .sort-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; }
+  .sort-count { font-size: 13px; color: var(--ink-soft); }
+  .sort-bar select {
+    font-size: 13px; border: 1px solid var(--border); border-radius: 8px;
+    padding: 5px 10px; background: white; color: var(--ink); outline: none; cursor: pointer;
+  }
+
+  /* Cards */
+  .items-grid { padding: 0 12px; }
+  .item-card {
+    background: white; border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden; margin-bottom: 14px;
+  }
+  .item-photo {
+    width: 100%; height: 200px; background: var(--cedar-pale);
+    display: flex; align-items: center; justify-content: center; font-size: 60px;
+  }
+  .item-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .item-body { padding: 16px; }
+  .item-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .item-name { font-size: 17px; font-weight: 700; line-height: 1.3; flex: 1; }
+  .item-cat {
+    font-size: 11px; font-weight: 600; color: var(--cedar); background: var(--cedar-pale);
+    padding: 3px 10px; border-radius: 10px; white-space: nowrap; margin-top: 2px; flex-shrink: 0;
+  }
+  .item-condition { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
+  .item-desc { font-size: 13px; color: var(--ink-soft); line-height: 1.6; margin-top: 10px; }
+  .item-notes {
+    font-size: 12px; color: var(--cedar); background: var(--cedar-pale);
+    padding: 8px 12px; border-radius: 8px; margin-top: 10px; line-height: 1.5;
+  }
+  .price-section {
+    border-top: 1px solid var(--border); padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .price-label { font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .5px; font-weight: 600; }
+  .price-value { font-size: 24px; font-weight: 800; color: var(--cedar); }
+  .price-sub { font-size: 12px; color: var(--ink-soft); }
+  .action-section { padding: 0 16px 16px; }
+  .btn-buy {
+    width: 100%; background: var(--gold); color: white; border: none;
+    border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700;
+    cursor: pointer; margin-bottom: 8px; font-family: inherit;
+  }
+  .bid-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .bid-input {
+    flex: 1; border: 1.5px solid var(--border); border-radius: 12px;
+    padding: 12px 14px; font-size: 16px; font-weight: 700; color: var(--ink);
+    outline: none; text-align: center; font-family: inherit;
+  }
+  .bid-input:focus { border-color: var(--cedar); }
+  .btn-bid {
+    background: var(--cedar); color: white; border: none; border-radius: 12px;
+    padding: 12px 18px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+  .bid-summary { font-size: 12px; color: var(--ink-soft); text-align: center; line-height: 1.7; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 200;
+    display: flex; align-items: flex-end; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity .25s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal-sheet {
+    background: white; width: 100%; max-width: 480px;
+    border-radius: 22px 22px 0 0; padding: 22px 20px 44px;
+    transform: translateY(100%); transition: transform .3s ease;
+    max-height: 92vh; overflow-y: auto;
+  }
+  .modal-overlay.open .modal-sheet { transform: translateY(0); }
+  .modal-handle { width: 40px; height: 4px; background: #ddd; border-radius: 4px; margin: 0 auto 18px; }
+  .modal-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  .modal-subtitle { font-size: 13px; color: var(--ink-soft); margin-bottom: 18px; line-height: 1.5; }
+  .modal-item-row {
+    background: var(--cedar-pale); border-radius: 12px; padding: 12px 14px;
+    margin-bottom: 18px; display: flex; align-items: center; gap: 12px;
+  }
+  .modal-item-name { font-size: 15px; font-weight: 700; }
+  .modal-item-price { font-size: 18px; font-weight: 800; color: var(--cedar); }
+
+  .form-label {
+    display: block; font-size: 12px; font-weight: 700; color: var(--ink-soft);
+    text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px;
+  }
+  .form-input {
+    width: 100%; border: 1.5px solid var(--border); border-radius: 11px;
+    padding: 12px 14px; font-size: 15px; color: var(--ink); outline: none;
+    font-family: inherit; margin-bottom: 14px;
+  }
+  .form-input:focus { border-color: var(--cedar); }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .slot-section-label {
+    font-size: 12px; font-weight: 700; color: var(--ink-soft);
+    text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px;
+  }
+  .slots-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .slot-btn {
+    padding: 11px 8px; border-radius: 10px; text-align: center;
+    border: 1.5px solid var(--border); background: white; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: var(--ink); font-family: inherit;
+    transition: all .15s;
+  }
+  .slot-btn:hover { border-color: var(--cedar); color: var(--cedar); }
+  .slot-btn.selected { background: var(--cedar); color: white; border-color: var(--cedar); }
+  .slot-day { font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; opacity: .75; margin-bottom: 2px; }
+  .slot-time-text { font-size: 13px; }
+
+  .disclaimer {
+    background: #FFF8E7; border: 1px solid #F0D9A0; border-radius: 10px;
+    padding: 12px 14px; font-size: 12px; color: #7A5C10;
+    line-height: 1.7; margin-bottom: 18px;
+  }
+  .btn-confirm {
+    width: 100%; background: var(--gold); color: white; border: none;
+    border-radius: 13px; padding: 16px; font-size: 16px; font-weight: 700;
+    cursor: pointer; font-family: inherit; margin-bottom: 10px;
+  }
+  .btn-cancel {
+    width: 100%; background: none; color: var(--ink-soft); border: none;
+    padding: 10px; font-size: 14px; cursor: pointer; font-family: inherit;
+  }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--ink-soft); }
+  .empty-icon { font-size: 52px; margin-bottom: 12px; }
+  .empty-text { font-size: 17px; font-weight: 700; }
+  .empty-sub { font-size: 13px; margin-top: 6px; }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(90px);
+    background: var(--cedar); color: white; padding: 13px 26px;
+    border-radius: 30px; font-size: 14px; font-weight: 600; z-index: 400;
+    transition: transform .3s ease; white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- Gate -->
+<div id="name-gate">
+  <div class="gate-logo">🏡</div>
+  <div class="gate-title">Baklini Home Sale</div>
+  <div class="gate-sub">You've been personally invited.<br>Enter your name to browse and bid.</div>
+  <input class="gate-input" id="gate-name" placeholder="Your first name" type="text"
+    onkeydown="if(event.key==='Enter')enterSale()">
+  <button class="gate-btn" onclick="enterSale()">Browse the Sale →</button>
+  <div class="gate-rules">
+    📋 <strong style="color:white;">How it works:</strong><br>
+    • Pay listing price = yours immediately<br>
+    • Bid below listing price — highest bid wins<br>
+    • Pickup only — you come, carry, and go<br>
+    • All items sold as-is · No refunds
+  </div>
+</div>
+
+<!-- Store -->
+<div id="main-store" style="display:none;">
+  <div class="hero">
+    <div class="hero-badge">Private Sale · By Invitation Only</div>
+    <h1>🏡 Baklini Home Sale</h1>
+    <div class="hero-sub">Bakersfield, CA · Everything must go — we're moving to Lebanon</div>
+    <div class="hero-rules">
+      📌 Pay listing price = yours now · Or place a bid<br>
+      🚗 Pickup only — buyer disassembles &amp; transports<br>
+      ⚠️ As-is sale. Not responsible for transport damage.
+    </div>
+  </div>
+
+  <div class="filters-wrap">
+    <div class="search-box">
+      <span style="font-size:16px;">🔍</span>
+      <input type="text" placeholder="Search items..." id="search-input" oninput="applyFilters()">
+    </div>
+    <div class="filters">
+      <div class="filter-chip active" onclick="setFilter('all',this)">All</div>
+      <div class="filter-chip" onclick="setFilter('📺 Electronics',this)">📺 Electronics</div>
+      <div class="filter-chip" onclick="setFilter('🛋️ Furniture',this)">🛋️ Furniture</div>
+      <div class="filter-chip" onclick="setFilter('🍳 Kitchen & Utensils',this)">🍳 Kitchen</div>
+      <div class="filter-chip" onclick="setFilter('🖼️ Decor & Art',this)">🖼️ Decor</div>
+      <div class="filter-chip" onclick="setFilter('🛏️ Bedroom',this)">🛏️ Bedroom</div>
+      <div class="filter-chip" onclick="setFilter('other',this)">More</div>
+    </div>
+  </div>
+
+  <div class="sort-bar">
+    <div class="sort-count" id="item-count-label">Loading...</div>
+    <select onchange="applyFilters()" id="sort-select">
+      <option value="newest">Newest first</option>
+      <option value="price-low">Price: Low–High</option>
+      <option value="price-high">Price: High–Low</option>
+    </select>
+  </div>
+
+  <div class="items-grid" id="items-grid"></div>
+</div>
+
+<!-- Checkout Modal -->
+<div class="modal-overlay" id="checkout-modal" onclick="closeModalOutside(event)">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Claim This Item</div>
+    <div class="modal-subtitle">Complete your details to confirm purchase and lock in a pickup time.</div>
+
+    <div class="modal-item-row" id="modal-item-row"></div>
+
+    <label class="form-label">Your Full Name</label>
+    <div class="two-col">
+      <input class="form-input" id="buyer-first" placeholder="First name" type="text">
+      <input class="form-input" id="buyer-last" placeholder="Last name" type="text">
+    </div>
+
+    <label class="form-label">Phone Number</label>
+    <input class="form-input" id="buyer-phone" placeholder="(555) 000-0000" type="tel">
+
+    <div class="slot-section-label">📅 Select Pickup Time — Weekdays Before 3 PM Only</div>
+    <div class="slots-grid" id="slots-grid"></div>
+
+    <div class="disclaimer">
+      ⚠️ By confirming you agree: item is sold <strong>as-is</strong>. You are responsible for disassembly, transport, and any damage after pickup. No refunds or exchanges.
+    </div>
+
+    <button class="btn-confirm" onclick="confirmPurchase()">✅ Confirm — I'll Be There</button>
+    <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'baklini_sale_items';
+const BIDS_KEY = 'baklini_sale_bids';
+let buyerName = '';
+let activeFilter = 'all';
+let pendingItemId = null;
+let pendingPrice = null;
+let selectedSlot = null;
+
+function getItems() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; } }
+function saveItems(i) { localStorage.setItem(STORAGE_KEY, JSON.stringify(i)); }
+function getBids()  { try { return JSON.parse(localStorage.getItem(BIDS_KEY))  || []; } catch { return []; } }
+function saveBids(b) { localStorage.setItem(BIDS_KEY, JSON.stringify(b)); }
+
+function getCatEmoji(cat) {
+  if (!cat) return '📦';
+  if (cat.includes('Electronics')) return '📺';
+  if (cat.includes('Furniture')) return '🛋️';
+  if (cat.includes('Kitchen')) return '🍳';
+  if (cat.includes('Decor')) return '🖼️';
+  if (cat.includes('Bedroom')) return '🛏️';
+  return '📦';
+}
+
+function enterSale() {
+  const n = document.getElementById('gate-name').value.trim();
+  if (!n) { document.getElementById('gate-name').focus(); return; }
+  buyerName = n;
+  document.getElementById('name-gate').style.display = 'none';
+  document.getElementById('main-store').style.display = 'block';
+  applyFilters();
+}
+
+function setFilter(cat, el) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  applyFilters();
+}
+
+function applyFilters() {
+  const search = document.getElementById('search-input').value.toLowerCase();
+  const sort = document.getElementById('sort-select').value;
+  let items = getItems().filter(i => i.status !== 'sold');
+
+  if (activeFilter !== 'all') {
+    const main = ['📺 Electronics','🛋️ Furniture','🍳 Kitchen & Utensils','🖼️ Decor & Art','🛏️ Bedroom'];
+    items = activeFilter === 'other'
+      ? items.filter(i => !main.includes(i.category))
+      : items.filter(i => i.category === activeFilter);
+  }
+  if (search) items = items.filter(i =>
+    (i.name||'').toLowerCase().includes(search) ||
+    (i.description||'').toLowerCase().includes(search) ||
+    (i.category||'').toLowerCase().includes(search)
+  );
+  if (sort === 'price-low') items.sort((a,b) => a.price - b.price);
+  else if (sort === 'price-high') items.sort((a,b) => b.price - a.price);
+  else items.sort((a,b) => new Date(b.addedAt) - new Date(a.addedAt));
+
+  document.getElementById('item-count-label').textContent =
+    `${items.length} item${items.length !== 1 ? 's' : ''} available`;
+  renderItems(items);
+}
+
+function renderItems(items) {
+  const bids = getBids();
+  const grid = document.getElementById('items-grid');
+  if (!items.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🔎</div><div class="empty-text">Nothing found</div><div class="empty-sub">Try a different search or filter</div></div>`;
+    return;
+  }
+  grid.innerHTML = items.map(item => {
+    const itemBids = bids.filter(b => b.itemId === item.id).sort((a,b) => b.amount - a.amount);
+    const topBid = itemBids[0];
+    const myBid = itemBids.find(b => b.buyerFirstName === buyerName);
+    const bidCount = itemBids.length;
+    const effectiveMin = topBid ? topBid.amount + 10 : (item.minBid || null);
+
+    const photoEl = item.photo
+      ? `<div class="item-photo"><img src="${item.photo}" alt="${item.name}"></div>`
+      : `<div class="item-photo">${getCatEmoji(item.category)}</div>`;
+
+    const notesHtml = item.notes ? `<div class="item-notes">📋 ${item.notes}</div>` : '';
+
+    const bidStatus = topBid
+      ? `Top bid: <strong>$${topBid.amount.toLocaleString()}</strong> · ${bidCount} bid${bidCount!==1?'s':''} · next min $${effectiveMin}`
+      : `No bids yet — be the first!`;
+
+    const myBidNote = myBid
+      ? `<br>Your bid: <strong style="color:var(--cedar)">$${myBid.amount}</strong>${myBid.amount === topBid?.amount ? ' 🏆 Winning!' : ''}`
+      : '';
+
+    const bidSection = effectiveMin ? `
+      <div class="bid-row">
+        <input type="number" class="bid-input" id="bid-${item.id}"
+          placeholder="Min $${effectiveMin}" min="${effectiveMin}" step="5">
+        <button class="btn-bid" onclick="placeBid(${item.id},${item.price})">Bid</button>
+      </div>` : '';
+
+    return `
+    <div class="item-card" id="card-${item.id}">
+      ${photoEl}
+      <div class="item-body">
+        <div class="item-top">
+          <div class="item-name">${item.name}</div>
+          <div class="item-cat">${(item.category||'').split(' ').slice(1).join(' ')}</div>
+        </div>
+        <div class="item-condition">Condition: ${item.condition}</div>
+        <div class="item-desc">${item.description}</div>
+        ${notesHtml}
+      </div>
+      <div class="price-section">
+        <div>
+          <div class="price-label">Buy It Now</div>
+          <div class="price-value">$${item.price.toLocaleString()}</div>
+          <div class="price-sub">${effectiveMin ? `Min bid: $${effectiveMin}` : 'Bidding not enabled'}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:12px;color:var(--ink-soft);">Bids</div>
+          <div style="font-size:22px;font-weight:800;color:${topBid?'var(--gold)':'var(--ink-soft)'};">${bidCount}</div>
+        </div>
+      </div>
+      <div class="action-section">
+        <button class="btn-buy" onclick="openCheckout(${item.id},${item.price})">
+          ⚡ Buy Now — $${item.price.toLocaleString()}
+        </button>
+        ${bidSection}
+        <div class="bid-summary">${bidStatus}${myBidNote}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Slot generator: next 10 weekdays, 6 time slots each ── */
+function generateSlots() {
+  const slots = [];
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const times = ['9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM'];
+  let d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+1);
+  let count = 0;
+  while (count < 10) {
+    const dow = d.getDay();
+    if (dow !== 0 && dow !== 6) {
+      for (const t of times) {
+        slots.push({ day: days[dow], date: `${months[d.getMonth()]} ${d.getDate()}`, time: t,
+          value: `${days[dow]}, ${months[d.getMonth()]} ${d.getDate()} @ ${t}` });
+      }
+      count++;
+    }
+    d.setDate(d.getDate()+1);
+  }
+  return slots;
+}
+
+function openCheckout(itemId, price) {
+  const items = getItems();
+  const item = items.find(i => i.id === itemId);
+  if (!item || item.status === 'sold') { showToast('⚠️ Item no longer available'); applyFilters(); return; }
+
+  pendingItemId = itemId; pendingPrice = price; selectedSlot = null;
+
+  document.getElementById('buyer-first').value = buyerName || '';
+  document.getElementById('buyer-last').value = '';
+  document.getElementById('buyer-phone').value = '';
+
+  const thumb = item.photo
+    ? `<img src="${item.photo}" style="width:52px;height:52px;object-fit:cover;border-radius:10px;" alt="${item.name}">`
+    : `<div style="width:52px;height:52px;background:white;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">${getCatEmoji(item.category)}</div>`;
+
+  document.getElementById('modal-item-row').innerHTML = `
+    ${thumb}
+    <div style="flex:1;">
+      <div class="modal-item-name">${item.name}</div>
+      <div class="modal-item-price">$${price.toLocaleString()}</div>
+    </div>`;
+
+  const slots = generateSlots().slice(0, 18); // 3 days
+  document.getElementById('slots-grid').innerHTML = slots.map((s, i) => `
+    <button class="slot-btn" onclick="selectSlot(this,'${s.value}')">
+      <div class="slot-day">${s.day} · ${s.date}</div>
+      <div class="slot-time-text">${s.time}</div>
+    </button>`).join('');
+
+  document.getElementById('checkout-modal').classList.add('open');
+}
+
+function selectSlot(btn, val) {
+  document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedSlot = val;
+}
+
+function closeModal() {
+  document.getElementById('checkout-modal').classList.remove('open');
+  pendingItemId = null; pendingPrice = null; selectedSlot = null;
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('checkout-modal')) closeModal();
+}
+
+function confirmPurchase() {
+  const first = document.getElementById('buyer-first').value.trim();
+  const last  = document.getElementById('buyer-last').value.trim();
+  const phone = document.getElementById('buyer-phone').value.trim();
+  if (!first || !last) { showToast('Please enter your full name', true); return; }
+  if (!phone) { showToast('Please enter your phone number', true); return; }
+  if (!selectedSlot) { showToast('Please select a pickup time slot', true); return; }
+
+  const items = getItems();
+  const item = items.find(i => i.id === pendingItemId);
+  if (!item || item.status === 'sold') { showToast('⚠️ Item just sold — so sorry!', true); closeModal(); applyFilters(); return; }
+
+  item.status = 'sold';
+  item.soldTo = `${first} ${last}`;
+  item.soldPhone = phone;
+  item.soldPickup = selectedSlot;
+  item.soldAt = new Date().toISOString();
+  item.soldPrice = pendingPrice;
+  saveItems(items);
+
+  const bids = getBids();
+  bids.push({
+    itemId: pendingItemId,
+    buyerFirstName: first,
+    buyerLastName: last,
+    buyerPhone: phone,
+    pickup: selectedSlot,
+    amount: pendingPrice,
+    type: 'buy-now',
+    time: new Date().toISOString()
+  });
+  saveBids(bids);
+
+  closeModal();
+  showToast(`🎉 It's yours! See you ${selectedSlot}.`);
+  setTimeout(() => applyFilters(), 1200);
+}
+
+function placeBid(itemId, listPrice) {
+  const bids = getBids();
+  const itemBids = bids.filter(b => b.itemId === itemId).sort((a,b) => b.amount - a.amount);
+  const topBid = itemBids[0];
+  const item = getItems().find(i => i.id === itemId);
+  const effectiveMin = topBid ? topBid.amount + 10 : (item?.minBid || 1);
+
+  const input = document.getElementById('bid-' + itemId);
+  const amount = parseFloat(input.value);
+
+  if (!amount || isNaN(amount)) { showToast('Enter a bid amount', true); return; }
+  if (amount < effectiveMin) { showToast(`Minimum bid is $${effectiveMin}`, true); return; }
+  if (amount >= listPrice) { input.value = ''; openCheckout(itemId, listPrice); return; }
+
+  bids.push({ itemId, buyerFirstName: buyerName, amount, type: 'bid', time: new Date().toISOString() });
+  saveBids(bids);
+
+  // Bump the item's stored minBid so the card reflects it instantly
+  const items = getItems();
+  const it = items.find(i => i.id === itemId);
+  if (it) { it.minBid = amount + 10; saveItems(items); }
+
+  input.value = '';
+  showToast(`✅ Bid of $${amount.toLocaleString()} placed! New min: $${amount + 10}`);
+  applyFilters();
+}
+
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.background = isError ? 'var(--danger)' : 'var(--cedar)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+</script>
+</body>
+</html>

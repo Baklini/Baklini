@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baklini Home Sale — Admin</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cedar: #2D4A3E;
+    --cedar-light: #3D6354;
+    --cedar-pale: #EAF2EE;
+    --gold: #C9973A;
+    --gold-pale: #FDF6E9;
+    --ink: #1A1A1A;
+    --ink-soft: #555;
+    --border: #D8E4DF;
+    --white: #FFFFFF;
+    --surface: #F7FAF8;
+    --danger: #C0392B;
+    --danger-pale: #FDEAEA;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--surface);
+    color: var(--ink);
+    min-height: 100vh;
+    padding-bottom: 60px;
+  }
+
+  /* Header */
+  .header {
+    background: var(--cedar);
+    color: white;
+    padding: 20px 20px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-top { display: flex; align-items: center; justify-content: space-between; }
+  .header h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+  .header p { font-size: 12px; opacity: 0.7; margin-top: 3px; }
+  .header-badge {
+    background: var(--gold);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  /* Nav tabs */
+  .nav-tabs {
+    display: flex;
+    background: var(--cedar-light);
+    padding: 0 16px;
+    gap: 4px;
+  }
+  .nav-tab {
+    flex: 1;
+    text-align: center;
+    padding: 10px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .nav-tab.active {
+    color: white;
+    border-bottom-color: var(--gold);
+  }
+
+  /* Pages */
+  .page { display: none; padding: 16px; }
+  .page.active { display: block; }
+
+  /* Section headers */
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--cedar);
+    margin: 0 0 12px;
+  }
+
+  /* Cards */
+  .card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+
+  /* Photo upload */
+  .photo-upload-area {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--cedar-pale);
+    position: relative;
+  }
+  .photo-upload-area:hover { border-color: var(--cedar); }
+  .photo-upload-area input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+  .upload-icon { font-size: 36px; margin-bottom: 8px; }
+  .upload-title { font-weight: 600; font-size: 15px; color: var(--cedar); }
+  .upload-sub { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
+
+  .photo-preview { position: relative; margin-bottom: 14px; }
+  .photo-preview img {
+    width: 100%;
+    max-height: 240px;
+    object-fit: cover;
+    border-radius: 12px;
+    display: block;
+  }
+  .photo-change-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  /* AI Analysis */
+  .ai-analyze-btn {
+    width: 100%;
+    background: var(--cedar);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s;
+    margin-bottom: 16px;
+  }
+  .ai-analyze-btn:disabled { background: #aaa; cursor: not-allowed; }
+  .ai-analyze-btn:hover:not(:disabled) { background: var(--cedar-light); }
+
+  .ai-result {
+    background: var(--gold-pale);
+    border: 1px solid #E8D5A3;
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 14px;
+    display: none;
+  }
+  .ai-result.show { display: block; }
+  .ai-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+  .ai-price-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .ai-price-label { font-size: 13px; color: var(--ink-soft); }
+  .ai-price-value { font-size: 22px; font-weight: 700; color: var(--cedar); }
+
+  /* Form */
+  .form-row { margin-bottom: 14px; }
+  .form-row label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .form-row input, .form-row select, .form-row textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 15px;
+    color: var(--ink);
+    background: white;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  .form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+    border-color: var(--cedar);
+  }
+  .form-row textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+
+  .price-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  /* Submit button */
+  .submit-btn {
+    width: 100%;
+    background: var(--gold);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: background 0.2s;
+  }
+  .submit-btn:hover { background: #b8862e; }
+
+  /* Listings page */
+  .filters {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    margin-bottom: 14px;
+    scrollbar-width: none;
+  }
+  .filters::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    white-space: nowrap;
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1.5px solid var(--border);
+    background: white;
+    color: var(--ink-soft);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .filter-chip.active { background: var(--cedar); color: white; border-color: var(--cedar); }
+
+  .listings-grid { display: flex; flex-direction: column; gap: 12px; }
+
+  .listing-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    display: flex;
+    gap: 0;
+  }
+  .listing-thumb {
+    width: 100px;
+    flex-shrink: 0;
+    object-fit: cover;
+    background: var(--cedar-pale);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+  }
+  .listing-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .listing-info { flex: 1; padding: 12px 14px; min-width: 0; }
+  .listing-name {
+    font-size: 15px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .listing-cat {
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+  }
+  .listing-prices { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; }
+  .listing-price { font-size: 17px; font-weight: 700; color: var(--cedar); }
+  .listing-min-bid { font-size: 12px; color: var(--ink-soft); }
+  .listing-status {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-top: 6px;
+  }
+  .status-available { background: #E8F5E9; color: #2E7D32; }
+  .status-bid { background: #FFF3E0; color: #E65100; }
+  .status-sold { background: #FDEAEA; color: var(--danger); }
+
+  .listing-actions { display: flex; gap: 6px; padding: 10px 14px; border-top: 1px solid var(--border); background: var(--surface); }
+  .action-btn {
+    flex: 1;
+    text-align: center;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--ink-soft);
+  }
+  .action-btn.primary { background: var(--cedar); color: white; border-color: var(--cedar); }
+  .action-btn.danger { color: var(--danger); border-color: #F5B5B5; }
+
+  /* Stats */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .stat-box {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-num { font-size: 26px; font-weight: 700; color: var(--cedar); }
+  .stat-label { font-size: 12px; color: var(--ink-soft); margin-top: 3px; }
+
+  /* Loading shimmer */
+  .shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 6px;
+    height: 14px;
+    margin: 6px 0;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--cedar);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 999;
+    transition: transform 0.3s ease;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: var(--ink-soft);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-text { font-size: 16px; font-weight: 600; }
+  .empty-sub { font-size: 13px; margin-top: 6px; }
+
+  /* Bid list */
+  .bids-list { margin-top: 10px; }
+  .bid-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .bid-row:last-child { border-bottom: none; }
+  .bid-name { font-weight: 600; }
+  .bid-amount { font-weight: 700; color: var(--cedar); }
+  .bid-time { font-size: 12px; color: var(--ink-soft); }
+
+  select { cursor: pointer; }
+
+  .mandatory-note {
+    background: var(--cedar-pale);
+    border-left: 3px solid var(--cedar);
+    padding: 10px 14px;
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    color: var(--cedar);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>🏡 Baklini Home Sale</h1>
+      <p>Private sale — Admin dashboard</p>
+    </div>
+    <span class="header-badge" id="item-count-badge">0 Items</span>
+  </div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="showPage('add')">＋ Add Item</div>
+    <div class="nav-tab" onclick="showPage('listings')">Listings</div>
+    <div class="nav-tab" onclick="showPage('overview')">Overview</div>
+  </div>
+</div>
+
+<!-- ADD ITEM PAGE -->
+<div class="page active" id="page-add">
+  <div class="mandatory-note">
+    📋 Items are picked up by buyers. No delivery. Buyers responsible for disassembly & transport. Highest bid wins, or first to pay list price gets it.
+  </div>
+
+  <!-- Photo Upload -->
+  <div class="card">
+    <div class="section-label">📷 Item Photo</div>
+    <div id="upload-area" class="photo-upload-area">
+      <input type="file" accept="image/*" onchange="handlePhotoUpload(event)" id="photo-input">
+      <div class="upload-icon">📸</div>
+      <div class="upload-title">Tap to add a photo</div>
+      <div class="upload-sub">Take a picture or choose from library</div>
+    </div>
+    <div id="photo-preview" class="photo-preview" style="display:none;">
+      <img id="preview-img" src="" alt="Item preview">
+      <button class="photo-change-btn" onclick="resetPhoto()">Change</button>
+    </div>
+
+    <button class="ai-analyze-btn" id="analyze-btn" onclick="analyzeWithAI()" disabled>
+      ✨ Analyze with AI & Get Pricing
+    </button>
+
+    <div class="ai-result" id="ai-result">
+      <div class="ai-tag">🤖 AI Suggested</div>
+      <div id="ai-description" style="font-size:14px; line-height:1.6; color:var(--ink);"></div>
+      <div class="ai-price-row">
+        <div class="ai-price-label">Suggested List Price:</div>
+        <div class="ai-price-value" id="ai-price"></div>
+      </div>
+      <div style="font-size:12px; color:var(--ink-soft); margin-top:6px;" id="ai-bid-suggest"></div>
+    </div>
+  </div>
+
+  <!-- Item Details -->
+  <div class="card">
+    <div class="section-label">📝 Item Details</div>
+
+    <div class="form-row">
+      <label>Item Name</label>
+      <input type="text" id="item-name" placeholder="e.g. Samsung 65&quot; 4K TV" oninput="checkForm()">
+    </div>
+
+    <div class="form-row">
+      <label>Category</label>
+      <select id="item-category" onchange="checkForm()">
+        <option value="">Select category...</option>
+        <option>📺 Electronics</option>
+        <option>🛋️ Furniture</option>
+        <option>🍳 Kitchen & Utensils</option>
+        <option>🖼️ Decor & Art</option>
+        <option>🛏️ Bedroom</option>
+        <option>🏋️ Outdoor & Garden</option>
+        <option>👕 Clothing & Accessories</option>
+        <option>📚 Books & Media</option>
+        <option>🧸 Kids & Toys</option>
+        <option>🔧 Tools & Hardware</option>
+        <option>🚲 Sports & Fitness</option>
+        <option>✨ Other</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label>Condition</label>
+      <select id="item-condition" onchange="checkForm()">
+        <option value="">Select condition...</option>
+        <option>Like New</option>
+        <option>Excellent</option>
+        <option>Good</option>
+        <option>Fair</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label>Description</label>
+      <textarea id="item-description" placeholder="Details, dimensions, age, brand..."></textarea>
+    </div>
+
+    <div class="form-row">
+      <label>Listing Price (Buy It Now)</label>
+      <input type="number" id="item-price" placeholder="$0.00" min="0" oninput="checkForm()">
+    </div>
+
+    <div class="form-row">
+      <label>Minimum Bid (optional)</label>
+      <input type="number" id="item-min-bid" placeholder="$0.00 (leave blank if no bidding)">
+    </div>
+
+    <div class="form-row">
+      <label>Notes for Buyers</label>
+      <textarea id="item-notes" placeholder="e.g. Needs 2 people to move, original box included..." style="min-height:60px;"></textarea>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="addItem()" disabled>
+      ✅ Add to Sale Listings
+    </button>
+  </div>
+</div>
+
+<!-- LISTINGS PAGE -->
+<div class="page" id="page-listings">
+  <div class="filters" id="filters-row">
+    <div class="filter-chip active" onclick="filterListings('all', this)">All</div>
+    <div class="filter-chip" onclick="filterListings('📺 Electronics', this)">📺 Electronics</div>
+    <div class="filter-chip" onclick="filterListings('🛋️ Furniture', this)">🛋️ Furniture</div>
+    <div class="filter-chip" onclick="filterListings('🍳 Kitchen & Utensils', this)">🍳 Kitchen</div>
+    <div class="filter-chip" onclick="filterListings('🖼️ Decor & Art', this)">🖼️ Decor</div>
+    <div class="filter-chip" onclick="filterListings('🛏️ Bedroom', this)">🛏️ Bedroom</div>
+    <div class="filter-chip" onclick="filterListings('other', this)">Other</div>
+  </div>
+  <div class="listings-grid" id="listings-grid"></div>
+</div>
+
+<!-- OVERVIEW PAGE -->
+<div class="page" id="page-overview">
+  <div class="stats-grid" id="stats-grid"></div>
+
+  <div class="card">
+    <div class="section-label">💰 Recent Bids</div>
+    <div id="bids-overview"></div>
+  </div>
+
+  <div class="card" style="border-color: var(--cedar); background: var(--cedar-pale);">
+    <div class="section-label">📋 Buyer Instructions</div>
+    <p style="font-size:13px; line-height:1.7; color:var(--cedar);">
+      All items are <strong>as-is, where-is</strong>.<br>
+      • Buyers must pick up in person.<br>
+      • Disassembly & transport are buyer's responsibility.<br>
+      • Items damaged during pickup are not our responsibility.<br>
+      • Highest bid wins OR first to pay listing price takes it.<br>
+      • Payment must be arranged before pickup.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="section-label">🔗 Share Buyer Link</div>
+    <div style="background: var(--surface); border-radius:10px; padding:12px 14px; font-size:13px; font-family:monospace; word-break:break-all; color:var(--ink-soft); margin-bottom:10px;" id="buyer-link-display">Open buyer-sale-store.html</div>
+    <button class="submit-btn" style="margin:0;" onclick="copyBuyerLink()">Copy Buyer Store Link</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'baklini_sale_items';
+const BIDS_KEY = 'baklini_sale_bids';
+let currentPhotoBase64 = null;
+let currentPage = 'add';
+
+function getItems() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+}
+function saveItems(items) { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
+function getBids() {
+  try { return JSON.parse(localStorage.getItem(BIDS_KEY)) || []; } catch { return []; }
+}
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-tab')[['add','listings','overview'].indexOf(name)].classList.add('active');
+  currentPage = name;
+  if (name === 'listings') renderListings('all');
+  if (name === 'overview') renderOverview();
+}
+
+function handlePhotoUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    currentPhotoBase64 = ev.target.result;
+    document.getElementById('upload-area').style.display = 'none';
+    document.getElementById('photo-preview').style.display = 'block';
+    document.getElementById('preview-img').src = currentPhotoBase64;
+    document.getElementById('analyze-btn').disabled = false;
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetPhoto() {
+  currentPhotoBase64 = null;
+  document.getElementById('upload-area').style.display = 'block';
+  document.getElementById('photo-preview').style.display = 'none';
+  document.getElementById('photo-input').value = '';
+  document.getElementById('analyze-btn').disabled = true;
+  document.getElementById('ai-result').classList.remove('show');
+}
+
+function checkForm() {
+  const name = document.getElementById('item-name').value.trim();
+  const cat = document.getElementById('item-category').value;
+  const cond = document.getElementById('item-condition').value;
+  const price = document.getElementById('item-price').value;
+  document.getElementById('submit-btn').disabled = !(name && cat && cond && price);
+}
+
+async function analyzeWithAI() {
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="shimmer" style="width:180px;height:16px;display:inline-block;"></span>';
+
+  const imageData = currentPhotoBase64.split(',')[1];
+  const mediaType = currentPhotoBase64.split(';')[0].split(':')[1];
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: { type: 'base64', media_type: mediaType, data: imageData }
+            },
+            {
+              type: 'text',
+              text: `You are a resale pricing expert. Analyze this household item photo and respond ONLY with valid JSON (no markdown, no backticks):
+{
+  "itemName": "short descriptive name",
+  "category": "one of: Electronics, Furniture, Kitchen & Utensils, Decor & Art, Bedroom, Outdoor & Garden, Clothing, Books & Media, Kids & Toys, Tools & Hardware, Sports & Fitness, Other",
+  "condition": "your assessment: Like New / Excellent / Good / Fair",
+  "description": "2-3 sentence buyer-facing description highlighting key features, brand if visible, approximate age/condition",
+  "listPrice": 150,
+  "minBid": 90,
+  "priceRationale": "one sentence explaining the pricing"
+}
+
+Base prices on current US secondhand market (Facebook Marketplace / OfferUp). Be realistic — not sentimental. Items are pickup-only, buyer handles transport.`
+            }
+          ]
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content.map(b => b.text || '').join('');
+    const clean = text.replace(/```json|```/g, '').trim();
+    const result = JSON.parse(clean);
+
+    document.getElementById('ai-result').classList.add('show');
+    document.getElementById('ai-description').textContent = result.description;
+    document.getElementById('ai-price').textContent = '$' + result.listPrice.toLocaleString();
+    document.getElementById('ai-bid-suggest').textContent = '💡 Suggested min bid: $' + result.minBid + ' — ' + result.priceRationale;
+
+    // Auto-fill form fields
+    if (!document.getElementById('item-name').value) {
+      document.getElementById('item-name').value = result.itemName;
+    }
+    if (!document.getElementById('item-description').value) {
+      document.getElementById('item-description').value = result.description;
+    }
+    if (!document.getElementById('item-price').value) {
+      document.getElementById('item-price').value = result.listPrice;
+    }
+    if (!document.getElementById('item-min-bid').value) {
+      document.getElementById('item-min-bid').value = result.minBid;
+    }
+    // Match category
+    const sel = document.getElementById('item-category');
+    for (let opt of sel.options) {
+      if (opt.value.toLowerCase().includes(result.category.toLowerCase().split(' ')[0])) {
+        sel.value = opt.value; break;
+      }
+    }
+    // Match condition
+    const condSel = document.getElementById('item-condition');
+    for (let opt of condSel.options) {
+      if (opt.value === result.condition) { condSel.value = opt.value; break; }
+    }
+
+    checkForm();
+    btn.disabled = false;
+    btn.innerHTML = '✨ Re-Analyze';
+
+  } catch (err) {
+    btn.disabled = false;
+    btn.innerHTML = '✨ Analyze with AI & Get Pricing';
+    showToast('AI analysis failed — try again', true);
+    console.error(err);
+  }
+}
+
+function addItem() {
+  const items = getItems();
+  const item = {
+    id: Date.now(),
+    name: document.getElementById('item-name').value.trim(),
+    category: document.getElementById('item-category').value,
+    condition: document.getElementById('item-condition').value,
+    description: document.getElementById('item-description').value.trim(),
+    price: parseFloat(document.getElementById('item-price').value),
+    minBid: parseFloat(document.getElementById('item-min-bid').value) || null,
+    notes: document.getElementById('item-notes').value.trim(),
+    photo: currentPhotoBase64,
+    status: 'available',
+    addedAt: new Date().toISOString()
+  };
+  items.unshift(item);
+  saveItems(items);
+  updateBadge();
+  resetForm();
+  showToast('✅ Item added to listings!');
+}
+
+function resetForm() {
+  resetPhoto();
+  ['item-name','item-description','item-price','item-min-bid','item-notes'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('item-category').value = '';
+  document.getElementById('item-condition').value = '';
+  document.getElementById('ai-result').classList.remove('show');
+  document.getElementById('submit-btn').disabled = true;
+}
+
+function updateBadge() {
+  const n = getItems().length;
+  document.getElementById('item-count-badge').textContent = n + ' Item' + (n !== 1 ? 's' : '');
+}
+
+function renderListings(filter) {
+  const items = getItems();
+  const bids = getBids();
+  const grid = document.getElementById('listings-grid');
+
+  const filtered = filter === 'all'
+    ? items
+    : filter === 'other'
+    ? items.filter(i => !['📺 Electronics','🛋️ Furniture','🍳 Kitchen & Utensils','🖼️ Decor & Art','🛏️ Bedroom'].includes(i.category))
+    : items.filter(i => i.category === filter);
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-text">No items here yet</div><div class="empty-sub">Add items using the + Add Item tab</div></div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(item => {
+    const itemBids = bids.filter(b => b.itemId === item.id).sort((a,b) => b.amount - a.amount);
+    const topBid = itemBids[0];
+    const statusClass = item.status === 'sold' ? 'status-sold' : topBid ? 'status-bid' : 'status-available';
+    const statusText = item.status === 'sold' ? '🔴 Sold' : topBid ? `🟡 Bid: $${topBid.amount}` : '🟢 Available';
+    const thumb = item.photo
+      ? `<img src="${item.photo}" alt="${item.name}">`
+      : `<div style="width:100px;height:100%;min-height:110px;background:var(--cedar-pale);display:flex;align-items:center;justify-content:center;font-size:32px;">${getCatEmoji(item.category)}</div>`;
+
+    return `
+    <div>
+      <div class="listing-card">
+        <div class="listing-thumb">${thumb}</div>
+        <div class="listing-info">
+          <div class="listing-name">${item.name}</div>
+          <div class="listing-cat">${item.category} · ${item.condition}</div>
+          <div class="listing-prices">
+            <div class="listing-price">$${item.price.toLocaleString()}</div>
+            ${item.minBid ? `<div class="listing-min-bid">min bid $${item.minBid}</div>` : ''}
+          </div>
+          <div class="listing-status ${statusClass}">${statusText}</div>
+        </div>
+      </div>
+      <div class="listing-actions">
+        <button class="action-btn" onclick="viewBids(${item.id})">Bids (${itemBids.length})</button>
+        <button class="action-btn primary" onclick="markSold(${item.id})">${item.status === 'sold' ? '↩ Unsell' : '✓ Mark Sold'}</button>
+        <button class="action-btn danger" onclick="deleteItem(${item.id})">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function getCatEmoji(cat) {
+  if (!cat) return '📦';
+  if (cat.includes('Electronics')) return '📺';
+  if (cat.includes('Furniture')) return '🛋️';
+  if (cat.includes('Kitchen')) return '🍳';
+  if (cat.includes('Decor')) return '🖼️';
+  if (cat.includes('Bedroom')) return '🛏️';
+  if (cat.includes('Outdoor')) return '🏡';
+  return '📦';
+}
+
+function filterListings(cat, el) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderListings(cat);
+}
+
+function markSold(id) {
+  const items = getItems();
+  const i = items.find(x => x.id === id);
+  if (!i) return;
+  i.status = i.status === 'sold' ? 'available' : 'sold';
+  saveItems(items);
+  renderListings('all');
+  document.querySelectorAll('.filter-chip')[0].classList.add('active');
+  document.querySelectorAll('.filter-chip').forEach((c,i) => { if(i>0) c.classList.remove('active'); });
+  showToast(i.status === 'sold' ? '✅ Marked as sold' : '↩ Relisted');
+}
+
+function deleteItem(id) {
+  if (!confirm('Remove this item from listings?')) return;
+  const items = getItems().filter(x => x.id !== id);
+  saveItems(items);
+  updateBadge();
+  renderListings('all');
+  showToast('Item removed');
+}
+
+function viewBids(id) {
+  const bids = getBids().filter(b => b.itemId === id).sort((a,b) => b.amount - a.amount);
+  const item = getItems().find(x => x.id === id);
+  if (!bids.length) { showToast('No bids yet for ' + item.name); return; }
+  const details = bids.map(b => `${b.name}: $${b.amount} (${new Date(b.time).toLocaleDateString()})`).join('\n');
+  alert(`Bids for "${item.name}":\n\n${details}`);
+}
+
+function renderOverview() {
+  const items = getItems();
+  const bids = getBids();
+  const sold = items.filter(i => i.status === 'sold');
+  const available = items.filter(i => i.status !== 'sold');
+  const totalValue = items.reduce((s, i) => s + i.price, 0);
+  const soldValue = sold.reduce((s, i) => s + i.price, 0);
+
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-box"><div class="stat-num">${items.length}</div><div class="stat-label">Total Items</div></div>
+    <div class="stat-box"><div class="stat-num">${available.length}</div><div class="stat-label">Available</div></div>
+    <div class="stat-box"><div class="stat-num">$${totalValue.toLocaleString()}</div><div class="stat-label">List Value</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--gold)">$${soldValue.toLocaleString()}</div><div class="stat-label">Sold Value</div></div>
+  `;
+
+  const recentBids = bids.slice(-10).reverse();
+  const bidsEl = document.getElementById('bids-overview');
+  if (!recentBids.length) {
+    bidsEl.innerHTML = '<p style="color:var(--ink-soft);font-size:14px;">No bids yet. Share the buyer link!</p>';
+  } else {
+    const items_ = getItems();
+    bidsEl.innerHTML = recentBids.map(b => {
+      const item = items_.find(i => i.id === b.itemId);
+      return `<div class="bid-row">
+        <div><div class="bid-name">${b.name}</div><div class="bid-time">${item ? item.name : 'Unknown'}</div></div>
+        <div class="bid-amount">$${b.amount}</div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function copyBuyerLink() {
+  navigator.clipboard.writeText('buyer-sale-store.html').catch(() => {});
+  showToast('📋 Link copied!');
+}
+
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = isError ? 'var(--danger)' : 'var(--cedar)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// Init
+updateBadge();
+</script>
+</body>
+</html>
