@@ -364,7 +364,8 @@ function enterSale() {
   buyerName = n;
   document.getElementById('name-gate').style.display = 'none';
   document.getElementById('main-store').style.display = 'block';
-  applyFilters();
+  // Small delay so DOM is visible before we query elements inside it
+  setTimeout(() => applyFilters(), 50);
 }
 
 function setFilter(cat, el) {
@@ -403,7 +404,7 @@ function renderItems(items) {
   const bids = getBids();
   const grid = document.getElementById('items-grid');
   if (!items.length) {
-    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🔎</div><div class="empty-text">Nothing found</div><div class="empty-sub">Try a different search or filter</div></div>`;
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🏡</div><div class="empty-text">No items listed yet</div><div class="empty-sub">Check back soon — items are being added!</div></div>`;
     return;
   }
   grid.innerHTML = items.map(item => {
