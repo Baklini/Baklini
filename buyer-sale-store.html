@@ -7,256 +7,121 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --cedar: #2D4A3E;
-    --cedar-light: #3D6354;
-    --cedar-pale: #EAF2EE;
-    --gold: #C9973A;
-    --ink: #1A1A1A;
-    --ink-soft: #666;
-    --border: #D8E4DF;
-    --surface: #F7FAF8;
-    --danger: #C0392B;
+    --cedar: #2D4A3E; --cedar-light: #3D6354; --cedar-pale: #EAF2EE;
+    --gold: #C9973A; --ink: #1A1A1A; --ink-soft: #666;
+    --border: #D8E4DF; --surface: #F7FAF8; --danger: #C0392B;
   }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: var(--surface); color: var(--ink);
-    min-height: 100vh; padding-bottom: 80px;
-  }
-
-  /* Gate */
-  #name-gate {
-    position: fixed; inset: 0; background: var(--cedar); z-index: 300;
-    display: flex; flex-direction: column; align-items: center;
-    justify-content: center; padding: 32px; text-align: center;
-  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--surface); color: var(--ink); min-height: 100vh; padding-bottom: 80px; }
+  #name-gate { position: fixed; inset: 0; background: var(--cedar); z-index: 300; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; text-align: center; }
   .gate-logo { font-size: 52px; margin-bottom: 18px; }
   .gate-title { font-size: 26px; font-weight: 800; color: white; margin-bottom: 6px; }
   .gate-sub { font-size: 14px; color: rgba(255,255,255,.72); margin-bottom: 28px; line-height: 1.6; }
-  .gate-input {
-    width: 100%; max-width: 320px; border: 2px solid rgba(255,255,255,.25);
-    background: rgba(255,255,255,.1); color: white; border-radius: 14px;
-    padding: 15px 18px; font-size: 17px; text-align: center; outline: none;
-    margin-bottom: 10px; font-family: inherit;
-  }
+  .gate-input { width: 100%; max-width: 320px; border: 2px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1); color: white; border-radius: 14px; padding: 15px 18px; font-size: 17px; text-align: center; outline: none; margin-bottom: 10px; font-family: inherit; }
   .gate-input::placeholder { color: rgba(255,255,255,.38); }
   .gate-input:focus { border-color: var(--gold); }
-  .gate-btn {
-    width: 100%; max-width: 320px; background: var(--gold); color: white;
-    border: none; border-radius: 14px; padding: 15px; font-size: 16px;
-    font-weight: 700; cursor: pointer; font-family: inherit;
-  }
-  .gate-rules {
-    margin-top: 22px; max-width: 320px; background: rgba(255,255,255,.07);
-    border-radius: 12px; padding: 14px 16px; font-size: 12px;
-    color: rgba(255,255,255,.68); text-align: left; line-height: 1.9;
-  }
-
-  /* Hero */
-  .hero {
-    background: var(--cedar); color: white;
-    padding: 24px 20px 18px; text-align: center;
-  }
-  .hero-badge {
-    display: inline-block; background: var(--gold); color: white;
-    font-size: 11px; font-weight: 700; letter-spacing: 1px;
-    text-transform: uppercase; padding: 4px 14px; border-radius: 20px; margin-bottom: 10px;
-  }
+  .gate-names { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 320px; margin-bottom: 10px; }
+  .gate-names .gate-input { margin-bottom: 0; }
+  .gate-btn { width: 100%; max-width: 320px; background: var(--gold); color: white; border: none; border-radius: 14px; padding: 15px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  .gate-error { color: #FFB3B3; font-size: 13px; min-height: 20px; margin-bottom: 6px; }
+  .gate-rules { margin-top: 22px; max-width: 320px; background: rgba(255,255,255,.07); border-radius: 12px; padding: 14px 16px; font-size: 12px; color: rgba(255,255,255,.68); text-align: left; line-height: 1.9; }
+  .hero { background: var(--cedar); color: white; padding: 24px 20px 18px; text-align: center; }
+  .hero-badge { display: inline-block; background: var(--gold); color: white; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 4px 14px; border-radius: 20px; margin-bottom: 10px; }
   .hero h1 { font-size: 24px; font-weight: 800; }
   .hero-sub { font-size: 13px; opacity: .78; margin-top: 5px; }
-  .hero-rules {
-    background: rgba(255,255,255,.1); border-radius: 12px;
-    padding: 11px 15px; margin-top: 14px; font-size: 12px; line-height: 1.8; text-align: left;
-  }
-
-  /* Filters */
-  .filters-wrap {
-    padding: 12px 16px 8px; background: white;
-    border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50;
-  }
-  .search-box {
-    display: flex; align-items: center; gap: 8px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 10px 14px; margin-bottom: 10px;
-  }
+  .hero-rules { background: rgba(255,255,255,.1); border-radius: 12px; padding: 11px 15px; margin-top: 14px; font-size: 12px; line-height: 1.8; text-align: left; }
+  .filters-wrap { padding: 12px 16px 8px; background: white; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+  .search-box { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; margin-bottom: 10px; }
   .search-box input { flex: 1; background: none; border: none; outline: none; font-size: 15px; color: var(--ink); }
   .filters { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
   .filters::-webkit-scrollbar { display: none; }
-  .filter-chip {
-    white-space: nowrap; padding: 7px 14px; border-radius: 20px; font-size: 12px;
-    font-weight: 600; border: 1.5px solid var(--border); background: white;
-    color: var(--ink-soft); cursor: pointer; flex-shrink: 0;
-  }
+  .filter-chip { white-space: nowrap; padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1.5px solid var(--border); background: white; color: var(--ink-soft); cursor: pointer; flex-shrink: 0; }
   .filter-chip.active { background: var(--cedar); color: white; border-color: var(--cedar); }
   .sort-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; }
   .sort-count { font-size: 13px; color: var(--ink-soft); }
-  .sort-bar select {
-    font-size: 13px; border: 1px solid var(--border); border-radius: 8px;
-    padding: 5px 10px; background: white; color: var(--ink); outline: none; cursor: pointer;
-  }
-
-  /* Cards */
+  .sort-bar select { font-size: 13px; border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px; background: white; color: var(--ink); outline: none; cursor: pointer; }
   .items-grid { padding: 0 12px; }
-  .item-card {
-    background: white; border: 1px solid var(--border);
-    border-radius: 16px; overflow: hidden; margin-bottom: 14px;
-  }
-  .item-photo {
-    width: 100%; height: 220px; background: var(--cedar-pale);
-    display: flex; align-items: center; justify-content: center; font-size: 60px;
-    position: relative; overflow: hidden;
-  }
+  .item-card { background: white; border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 14px; }
+  .item-photo { width: 100%; height: 220px; background: var(--cedar-pale); display: flex; align-items: center; justify-content: center; font-size: 60px; position: relative; overflow: hidden; }
   .item-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  /* Carousel */
   .photo-carousel { position: relative; width: 100%; height: 220px; overflow: hidden; background: var(--cedar-pale); }
   .carousel-track { display: flex; height: 100%; transition: transform 0.3s ease; }
   .carousel-track img { flex-shrink: 0; width: 100%; height: 100%; object-fit: cover; }
-  .carousel-btn {
-    position: absolute; top: 50%; transform: translateY(-50%);
-    background: rgba(0,0,0,0.45); color: white; border: none;
-    border-radius: 50%; width: 32px; height: 32px; font-size: 16px;
-    cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center;
-  }
+  .carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,.45); color: white; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 16px; cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; }
   .carousel-prev { left: 8px; }
   .carousel-next { right: 8px; }
   .carousel-dots { position: absolute; bottom: 8px; left: 0; right: 0; display: flex; justify-content: center; gap: 5px; }
-  .carousel-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.5); }
+  .carousel-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.5); }
   .carousel-dot.active { background: white; }
   .item-body { padding: 16px; }
   .item-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
   .item-name { font-size: 17px; font-weight: 700; line-height: 1.3; flex: 1; }
-  .item-cat {
-    font-size: 11px; font-weight: 600; color: var(--cedar); background: var(--cedar-pale);
-    padding: 3px 10px; border-radius: 10px; white-space: nowrap; margin-top: 2px; flex-shrink: 0;
-  }
+  .item-cat { font-size: 11px; font-weight: 600; color: var(--cedar); background: var(--cedar-pale); padding: 3px 10px; border-radius: 10px; white-space: nowrap; margin-top: 2px; flex-shrink: 0; }
   .item-condition { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
   .item-desc { font-size: 13px; color: var(--ink-soft); line-height: 1.6; margin-top: 10px; }
-  .item-notes {
-    font-size: 12px; color: var(--cedar); background: var(--cedar-pale);
-    padding: 8px 12px; border-radius: 8px; margin-top: 10px; line-height: 1.5;
-  }
-  .price-section {
-    border-top: 1px solid var(--border); padding: 14px 16px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
+  .item-notes { font-size: 12px; color: var(--cedar); background: var(--cedar-pale); padding: 8px 12px; border-radius: 8px; margin-top: 10px; line-height: 1.5; }
+  .price-section { border-top: 1px solid var(--border); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; }
   .price-label { font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .5px; font-weight: 600; }
   .price-value { font-size: 24px; font-weight: 800; color: var(--cedar); }
   .price-sub { font-size: 12px; color: var(--ink-soft); }
   .action-section { padding: 0 16px 16px; }
-  .btn-buy {
-    width: 100%; background: var(--gold); color: white; border: none;
-    border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700;
-    cursor: pointer; margin-bottom: 8px; font-family: inherit;
-  }
+  .btn-buy { width: 100%; background: var(--gold); color: white; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 8px; font-family: inherit; }
   .bid-row { display: flex; gap: 8px; margin-bottom: 8px; }
-  .bid-input {
-    flex: 1; border: 1.5px solid var(--border); border-radius: 12px;
-    padding: 12px 14px; font-size: 16px; font-weight: 700; color: var(--ink);
-    outline: none; text-align: center; font-family: inherit;
-  }
+  .bid-input { flex: 1; border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; font-size: 16px; font-weight: 700; color: var(--ink); outline: none; text-align: center; font-family: inherit; }
   .bid-input:focus { border-color: var(--cedar); }
-  .btn-bid {
-    background: var(--cedar); color: white; border: none; border-radius: 12px;
-    padding: 12px 18px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
-  }
+  .btn-bid { background: var(--cedar); color: white; border: none; border-radius: 12px; padding: 12px 18px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
   .bid-summary { font-size: 12px; color: var(--ink-soft); text-align: center; line-height: 1.7; }
-
-  /* Modal */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 200;
-    display: flex; align-items: flex-end; justify-content: center;
-    opacity: 0; pointer-events: none; transition: opacity .25s;
-  }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 200; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .25s; }
   .modal-overlay.open { opacity: 1; pointer-events: all; }
-  .modal-sheet {
-    background: white; width: 100%; max-width: 480px;
-    border-radius: 22px 22px 0 0; padding: 22px 20px 44px;
-    transform: translateY(100%); transition: transform .3s ease;
-    max-height: 92vh; overflow-y: auto;
-  }
+  .modal-sheet { background: white; width: 100%; max-width: 480px; border-radius: 22px 22px 0 0; padding: 22px 20px 44px; transform: translateY(100%); transition: transform .3s ease; max-height: 92vh; overflow-y: auto; }
   .modal-overlay.open .modal-sheet { transform: translateY(0); }
   .modal-handle { width: 40px; height: 4px; background: #ddd; border-radius: 4px; margin: 0 auto 18px; }
   .modal-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
   .modal-subtitle { font-size: 13px; color: var(--ink-soft); margin-bottom: 18px; line-height: 1.5; }
-  .modal-item-row {
-    background: var(--cedar-pale); border-radius: 12px; padding: 12px 14px;
-    margin-bottom: 18px; display: flex; align-items: center; gap: 12px;
-  }
-  .modal-item-name { font-size: 15px; font-weight: 700; }
-  .modal-item-price { font-size: 18px; font-weight: 800; color: var(--cedar); }
-
-  .form-label {
-    display: block; font-size: 12px; font-weight: 700; color: var(--ink-soft);
-    text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px;
-  }
-  .form-input {
-    width: 100%; border: 1.5px solid var(--border); border-radius: 11px;
-    padding: 12px 14px; font-size: 15px; color: var(--ink); outline: none;
-    font-family: inherit; margin-bottom: 14px;
-  }
+  .modal-item-row { background: var(--cedar-pale); border-radius: 12px; padding: 12px 14px; margin-bottom: 18px; display: flex; align-items: center; gap: 12px; }
+  .form-label { display: block; font-size: 12px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+  .form-input { width: 100%; border: 1.5px solid var(--border); border-radius: 11px; padding: 12px 14px; font-size: 15px; color: var(--ink); outline: none; font-family: inherit; margin-bottom: 14px; }
   .form-input:focus { border-color: var(--cedar); }
-  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-  .slot-section-label {
-    font-size: 12px; font-weight: 700; color: var(--ink-soft);
-    text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px;
-  }
+  .slot-section-label { font-size: 12px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
   .slots-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-  .slot-btn {
-    padding: 11px 8px; border-radius: 10px; text-align: center;
-    border: 1.5px solid var(--border); background: white; cursor: pointer;
-    font-size: 13px; font-weight: 600; color: var(--ink); font-family: inherit;
-    transition: all .15s;
-  }
+  .slot-btn { padding: 11px 8px; border-radius: 10px; text-align: center; border: 1.5px solid var(--border); background: white; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--ink); font-family: inherit; transition: all .15s; }
   .slot-btn:hover { border-color: var(--cedar); color: var(--cedar); }
   .slot-btn.selected { background: var(--cedar); color: white; border-color: var(--cedar); }
   .slot-day { font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; opacity: .75; margin-bottom: 2px; }
-  .slot-time-text { font-size: 13px; }
-
-  .disclaimer {
-    background: #FFF8E7; border: 1px solid #F0D9A0; border-radius: 10px;
-    padding: 12px 14px; font-size: 12px; color: #7A5C10;
-    line-height: 1.7; margin-bottom: 18px;
-  }
-  .btn-confirm {
-    width: 100%; background: var(--gold); color: white; border: none;
-    border-radius: 13px; padding: 16px; font-size: 16px; font-weight: 700;
-    cursor: pointer; font-family: inherit; margin-bottom: 10px;
-  }
-  .btn-cancel {
-    width: 100%; background: none; color: var(--ink-soft); border: none;
-    padding: 10px; font-size: 14px; cursor: pointer; font-family: inherit;
-  }
-
+  .disclaimer { background: #FFF8E7; border: 1px solid #F0D9A0; border-radius: 10px; padding: 12px 14px; font-size: 12px; color: #7A5C10; line-height: 1.7; margin-bottom: 18px; }
+  .btn-confirm { width: 100%; background: var(--gold); color: white; border: none; border-radius: 13px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; margin-bottom: 10px; }
+  .btn-cancel { width: 100%; background: none; color: var(--ink-soft); border: none; padding: 10px; font-size: 14px; cursor: pointer; font-family: inherit; }
   .empty-state { text-align: center; padding: 60px 20px; color: var(--ink-soft); }
   .empty-icon { font-size: 52px; margin-bottom: 12px; }
   .empty-text { font-size: 17px; font-weight: 700; }
   .empty-sub { font-size: 13px; margin-top: 6px; }
-
-  .toast {
-    position: fixed; bottom: 24px; left: 50%;
-    transform: translateX(-50%) translateY(90px);
-    background: var(--cedar); color: white; padding: 13px 26px;
-    border-radius: 30px; font-size: 14px; font-weight: 600; z-index: 400;
-    transition: transform .3s ease; white-space: nowrap;
-  }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(90px); background: var(--cedar); color: white; padding: 13px 26px; border-radius: 30px; font-size: 14px; font-weight: 600; z-index: 400; transition: transform .3s ease; white-space: nowrap; }
   .toast.show { transform: translateX(-50%) translateY(0); }
+  /* Lightbox */
+  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.95); z-index: 500; display: none; flex-direction: column; align-items: center; justify-content: center; }
+  .lightbox.open { display: flex; }
+  .lightbox-img { max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px; }
+  .lightbox-close { position: absolute; top: 16px; right: 18px; color: white; font-size: 32px; cursor: pointer; background: none; border: none; line-height: 1; }
+  .lightbox-nav { display: flex; align-items: center; gap: 20px; margin-top: 16px; }
+  .lightbox-nav button { background: rgba(255,255,255,.15); border: none; color: white; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .lightbox-counter { color: rgba(255,255,255,.7); font-size: 14px; font-weight: 600; }
+  .lightbox-thumbs { display: flex; gap: 8px; margin-top: 12px; overflow-x: auto; padding: 4px 16px; }
+  .lightbox-thumb { width: 52px; height: 52px; object-fit: cover; border-radius: 6px; cursor: pointer; opacity: .5; border: 2px solid transparent; flex-shrink: 0; }
+  .lightbox-thumb.active { opacity: 1; border-color: var(--gold); }
+  .qty-badge { display: inline-block; background: var(--gold); color: white; font-size: 11px; font-weight: 700; padding: 2px 10px; border-radius: 10px; margin-top: 6px; }
 </style>
 </head>
 <body>
 
-<!-- Gate -->
 <div id="name-gate">
   <div class="gate-logo">🏡</div>
   <div class="gate-title">Baklini Home Sale</div>
   <div class="gate-sub">You've been personally invited.<br>Enter your details to browse and bid.</div>
-  <div style="width:100%;max-width:320px;">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
-      <input class="gate-input" id="gate-first" placeholder="First name" type="text" style="margin:0;">
-      <input class="gate-input" id="gate-last" placeholder="Last name" type="text" style="margin:0;">
-    </div>
-    <input class="gate-input" id="gate-password" placeholder="Access password" type="password" style="margin-bottom:10px;">
-    <div id="gate-error" style="color:#ffaaaa;font-size:13px;margin-bottom:8px;min-height:18px;"></div>
+  <div class="gate-names">
+    <input class="gate-input" id="gate-first" placeholder="First name" type="text">
+    <input class="gate-input" id="gate-last" placeholder="Last name" type="text">
   </div>
+  <input class="gate-input" id="gate-password" placeholder="Password" type="password">
+  <div class="gate-error" id="gate-error"></div>
   <button class="gate-btn" id="gate-btn">Browse the Sale →</button>
   <div class="gate-rules">
     📋 <strong style="color:white;">How it works:</strong><br>
@@ -267,7 +132,6 @@
   </div>
 </div>
 
-<!-- Store -->
 <div id="main-store" style="display:none;">
   <div class="hero">
     <div class="hero-badge">Private Sale · By Invitation Only</div>
@@ -279,7 +143,6 @@
       ⚠️ As-is sale. Not responsible for transport damage.
     </div>
   </div>
-
   <div class="filters-wrap">
     <div class="search-box">
       <span style="font-size:16px;">🔍</span>
@@ -295,7 +158,6 @@
       <div class="filter-chip" onclick="setFilter('other',this)">More</div>
     </div>
   </div>
-
   <div class="sort-bar">
     <div class="sort-count" id="item-count-label">Loading...</div>
     <select onchange="applyFilters()" id="sort-select">
@@ -304,35 +166,25 @@
       <option value="price-high">Price: High–Low</option>
     </select>
   </div>
-
   <div class="items-grid" id="items-grid"></div>
 </div>
 
-<!-- Checkout Modal -->
 <div class="modal-overlay" id="checkout-modal" onclick="closeModalOutside(event)">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-title">Claim This Item</div>
-    <div class="modal-subtitle">Complete your details to confirm purchase and lock in a pickup time.</div>
-
+    <div class="modal-subtitle">Confirm your details and select a pickup time.</div>
     <div class="modal-item-row" id="modal-item-row"></div>
-
     <label class="form-label">Your Full Name</label>
-    <div class="two-col">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0;">
       <input class="form-input" id="buyer-first" placeholder="First name" type="text">
       <input class="form-input" id="buyer-last" placeholder="Last name" type="text">
     </div>
-
     <label class="form-label">Phone Number</label>
     <input class="form-input" id="buyer-phone" placeholder="(555) 000-0000" type="tel">
-
     <div class="slot-section-label">📅 Select Pickup Time — Weekdays Before 3 PM Only</div>
     <div class="slots-grid" id="slots-grid"></div>
-
-    <div class="disclaimer">
-      ⚠️ By confirming you agree: item is sold <strong>as-is</strong>. You are responsible for disassembly, transport, and any damage after pickup. No refunds or exchanges.
-    </div>
-
+    <div class="disclaimer">⚠️ By confirming you agree: item is sold <strong>as-is</strong>. You are responsible for disassembly, transport, and any damage after pickup. No refunds.</div>
     <button class="btn-confirm" onclick="confirmPurchase()">✅ Confirm — I'll Be There</button>
     <button class="btn-cancel" onclick="closeModal()">Cancel</button>
   </div>
@@ -340,19 +192,41 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" onclick="closeLightbox()">×</button>
+  <img class="lightbox-img" id="lightbox-img" src="" alt="">
+  <div class="lightbox-nav">
+    <button onclick="lightboxNav(-1)">‹</button>
+    <span class="lightbox-counter" id="lightbox-counter"></span>
+    <button onclick="lightboxNav(1)">›</button>
+  </div>
+  <div class="lightbox-thumbs" id="lightbox-thumbs"></div>
+</div>
+
 <script>
-const STORAGE_KEY = 'baklini_sale_items';
-const BIDS_KEY = 'baklini_sale_bids';
+const SB_URL = 'https://rvnjdkdkqsqvvmjoevnl.supabase.co';
+const SB_KEY = 'sb_publishable_JU7xwqG9Hr86Tv-tn_fpfQ_G7gt6e61';
+const SALE_PASSWORD = 'lebanon2025';
+
 let buyerName = '';
+let buyerFirst = '';
+let buyerLast = '';
 let activeFilter = 'all';
+let allItems = [];
+let allBids = [];
 let pendingItemId = null;
 let pendingPrice = null;
 let selectedSlot = null;
 
-function getItems() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; } }
-function saveItems(i) { localStorage.setItem(STORAGE_KEY, JSON.stringify(i)); }
-function getBids()  { try { return JSON.parse(localStorage.getItem(BIDS_KEY))  || []; } catch { return []; } }
-function saveBids(b) { localStorage.setItem(BIDS_KEY, JSON.stringify(b)); }
+async function sbFetch(path, method='GET', body=null) {
+  const opts = { method, headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(SB_URL + '/rest/v1/' + path, opts);
+  if (!r.ok) { const t = await r.text(); throw new Error(t); }
+  const txt = await r.text();
+  return txt ? JSON.parse(txt) : [];
+}
 
 function getCatEmoji(cat) {
   if (!cat) return '📦';
@@ -364,142 +238,97 @@ function getCatEmoji(cat) {
   return '📦';
 }
 
-// ── Change this password to whatever you share with guests ──
-const SALE_PASSWORD = 'lebanon2025';
-
 function enterSale() {
   const first = document.getElementById('gate-first').value.trim();
   const last  = document.getElementById('gate-last').value.trim();
   const pass  = document.getElementById('gate-password').value.trim();
   const errEl = document.getElementById('gate-error');
-
+  errEl.textContent = '';
   if (!first || !last) { errEl.textContent = 'Please enter your first and last name.'; return; }
-  if (!pass) { errEl.textContent = 'Please enter the access password.'; return; }
-  if (pass.toLowerCase() !== SALE_PASSWORD.toLowerCase()) {
-    errEl.textContent = '❌ Wrong password — contact Johnny or Elsy for access.';
-    document.getElementById('gate-password').value = '';
-    return;
-  }
-
-  buyerName = first + ' ' + last;
-  localStorage.setItem('baklini_buyer_name', buyerName);
-  localStorage.setItem('baklini_buyer_auth', 'true');
+  if (!pass) { errEl.textContent = 'Please enter the password.'; return; }
+  if (pass.toLowerCase() !== SALE_PASSWORD.toLowerCase()) { errEl.textContent = '❌ Wrong password — contact Johnny or Elsy!'; document.getElementById('gate-password').value=''; return; }
+  buyerFirst = first; buyerLast = last; buyerName = first + ' ' + last;
+  localStorage.setItem('baklini_buyer_first', first);
+  localStorage.setItem('baklini_buyer_last', last);
   showStore();
 }
 
 function showStore() {
   document.getElementById('name-gate').style.display = 'none';
   document.getElementById('main-store').style.display = 'block';
-  setTimeout(() => applyFilters(), 50);
+  setTimeout(() => { applyFilters(); showToast('👋 Welcome, ' + buyerFirst + '!'); }, 100);
 }
 
 function setFilter(cat, el) {
   activeFilter = cat;
-  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
   el.classList.add('active');
   applyFilters();
 }
 
-function applyFilters() {
+async function applyFilters() {
+  document.getElementById('item-count-label').textContent = 'Loading…';
+  const [items, bids] = await Promise.all([
+    sbFetch('items?order=added_at.desc'),
+    sbFetch('bids?order=time.desc')
+  ]);
+  allItems = items; allBids = bids;
   const search = document.getElementById('search-input').value.toLowerCase();
   const sort = document.getElementById('sort-select').value;
-  let items = getItems().filter(i => i.status !== 'sold');
-
+  let filtered = items.filter(i => i.status !== 'sold');
   if (activeFilter !== 'all') {
     const main = ['📺 Electronics','🛋️ Furniture','🍳 Kitchen & Utensils','🖼️ Decor & Art','🛏️ Bedroom'];
-    items = activeFilter === 'other'
-      ? items.filter(i => !main.includes(i.category))
-      : items.filter(i => i.category === activeFilter);
+    filtered = activeFilter === 'other' ? filtered.filter(i=>!main.includes(i.category)) : filtered.filter(i=>i.category===activeFilter);
   }
-  if (search) items = items.filter(i =>
-    (i.name||'').toLowerCase().includes(search) ||
-    (i.description||'').toLowerCase().includes(search) ||
-    (i.category||'').toLowerCase().includes(search)
-  );
-  if (sort === 'price-low') items.sort((a,b) => a.price - b.price);
-  else if (sort === 'price-high') items.sort((a,b) => b.price - a.price);
-  else items.sort((a,b) => new Date(b.addedAt) - new Date(a.addedAt));
-
-  document.getElementById('item-count-label').textContent =
-    `${items.length} item${items.length !== 1 ? 's' : ''} available`;
-  renderItems(items);
+  if (search) filtered = filtered.filter(i => (i.name||'').toLowerCase().includes(search)||(i.description||'').toLowerCase().includes(search));
+  if (sort==='price-low') filtered.sort((a,b)=>a.price-b.price);
+  else if (sort==='price-high') filtered.sort((a,b)=>b.price-a.price);
+  document.getElementById('item-count-label').textContent = `${filtered.length} item${filtered.length!==1?'s':''} available`;
+  renderItems(filtered, bids);
 }
 
-function renderItems(items) {
-  const bids = getBids();
+function renderItems(items, bids) {
   const grid = document.getElementById('items-grid');
-  if (!items.length) {
-    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🏡</div><div class="empty-text">No items listed yet</div><div class="empty-sub">Check back soon — items are being added!</div></div>`;
-    return;
-  }
+  if (!items.length) { grid.innerHTML='<div class="empty-state"><div class="empty-icon">🏡</div><div class="empty-text">No items listed yet</div><div class="empty-sub">Check back soon — items are being added!</div></div>'; return; }
   grid.innerHTML = items.map(item => {
-    const itemBids = bids.filter(b => b.itemId === item.id).sort((a,b) => b.amount - a.amount);
+    const itemBids = bids.filter(b=>b.item_id===item.id).sort((a,b)=>b.amount-a.amount);
     const topBid = itemBids[0];
-    const myBid = itemBids.find(b => b.buyerFirstName === buyerName);
+    const myBid = itemBids.find(b=>(b.buyer_first+' '+b.buyer_last)===buyerName);
     const bidCount = itemBids.length;
-    const effectiveMin = topBid ? topBid.amount + 10 : (item.minBid || null);
+    const effectiveMin = topBid ? topBid.amount+10 : (item.min_bid||null);
+    const photos = item.photos ? JSON.parse(item.photos) : [];
 
-    const photos = item.photos?.length ? item.photos : (item.photo ? [item.photo] : []);
     let photoEl;
     if (photos.length > 1) {
-      const dots = photos.map((_,i) => `<div class="carousel-dot${i===0?' active':''}"></div>`).join('');
-      const imgs = photos.map(p => `<img src="${p}" alt="${item.name}">`).join('');
-      photoEl = `<div class="photo-carousel" id="carousel-${item.id}">
-        <div class="carousel-track" id="track-${item.id}">${imgs}</div>
-        <button class="carousel-btn carousel-prev" onclick="carouselMove(${item.id},-1)">‹</button>
-        <button class="carousel-btn carousel-next" onclick="carouselMove(${item.id},1)">›</button>
-        <div class="carousel-dots" id="dots-${item.id}">${dots}</div>
-      </div>`;
-    } else if (photos.length === 1) {
-      photoEl = `<div class="item-photo"><img src="${photos[0]}" alt="${item.name}"></div>`;
+      const dots = photos.map((_,i)=>`<div class="carousel-dot${i===0?' active':''}"></div>`).join('');
+      const imgs = photos.map(p=>`<img src="${p}" alt="${item.name}">`).join('');
+      photoEl = `<div class="photo-carousel" id="carousel-${item.id}"><div class="carousel-track" id="track-${item.id}" onclick="openLightbox(${item.id}, carouselState[${item.id}]||0)" style="cursor:zoom-in;">${imgs}</div><button class="carousel-btn carousel-prev" onclick="event.stopPropagation();carouselMove(${item.id},-1)">‹</button><button class="carousel-btn carousel-next" onclick="event.stopPropagation();carouselMove(${item.id},1)">›</button><div class="carousel-dots" id="dots-${item.id}">${dots}</div></div>`;
+    } else if (photos.length===1) {
+      photoEl = `<div class="item-photo" onclick="openLightbox(${JSON.stringify(item.id)},0)" style="cursor:zoom-in;"><img src="${photos[0]}" alt="${item.name}"></div>`;
     } else {
       photoEl = `<div class="item-photo">${getCatEmoji(item.category)}</div>`;
     }
 
     const notesHtml = item.notes ? `<div class="item-notes">📋 ${item.notes}</div>` : '';
+    const bidStatus = topBid ? `Top bid: <strong>$${topBid.amount.toLocaleString()}</strong> · ${bidCount} bid${bidCount!==1?'s':''} · next min $${effectiveMin}` : `No bids yet — be the first!`;
+    const myBidNote = myBid ? `<br>Your bid: <strong style="color:var(--cedar)">$${myBid.amount}</strong>${myBid.amount===topBid?.amount?' 🏆 Winning!':''}` : '';
+    const bidSection = effectiveMin ? `<div class="bid-row"><input type="number" class="bid-input" id="bid-${item.id}" placeholder="Min $${effectiveMin}" min="${effectiveMin}" step="5"><button class="btn-bid" onclick="placeBid(${item.id},${item.price})">Bid</button></div>` : '';
 
-    const bidStatus = topBid
-      ? `Top bid: <strong>$${topBid.amount.toLocaleString()}</strong> · ${bidCount} bid${bidCount!==1?'s':''} · next min $${effectiveMin}`
-      : `No bids yet — be the first!`;
-
-    const myBidNote = myBid
-      ? `<br>Your bid: <strong style="color:var(--cedar)">$${myBid.amount}</strong>${myBid.amount === topBid?.amount ? ' 🏆 Winning!' : ''}`
-      : '';
-
-    const bidSection = effectiveMin ? `
-      <div class="bid-row">
-        <input type="number" class="bid-input" id="bid-${item.id}"
-          placeholder="Min $${effectiveMin}" min="${effectiveMin}" step="5">
-        <button class="btn-bid" onclick="placeBid(${item.id},${item.price})">Bid</button>
-      </div>` : '';
-
-    return `
-    <div class="item-card" id="card-${item.id}">
+    return `<div class="item-card" id="card-${item.id}">
       ${photoEl}
       <div class="item-body">
-        <div class="item-top">
-          <div class="item-name">${item.name}</div>
-          <div class="item-cat">${(item.category||'').split(' ').slice(1).join(' ')}</div>
-        </div>
+        <div class="item-top"><div class="item-name">${item.name}</div><div class="item-cat">${(item.category||'').split(' ').slice(1).join(' ')}</div></div>
         <div class="item-condition">Condition: ${item.condition}</div>
+        ${item.quantity>1?`<div class="qty-badge">Qty available: ${item.quantity} · ${item.price_type==='bulk'?'Price for all':'Price per unit'}</div>`:''}
         <div class="item-desc">${item.description}</div>
         ${notesHtml}
       </div>
       <div class="price-section">
-        <div>
-          <div class="price-label">Buy It Now</div>
-          <div class="price-value">$${item.price.toLocaleString()}</div>
-          <div class="price-sub">${effectiveMin ? `Min bid: $${effectiveMin}` : 'Bidding not enabled'}</div>
-        </div>
-        <div style="text-align:right;">
-          <div style="font-size:12px;color:var(--ink-soft);">Bids</div>
-          <div style="font-size:22px;font-weight:800;color:${topBid?'var(--gold)':'var(--ink-soft)'};">${bidCount}</div>
-        </div>
+        <div><div class="price-label">Buy It Now</div><div class="price-value">$${item.price.toLocaleString()}</div><div class="price-sub">${effectiveMin?`Min bid: $${effectiveMin}`:'Bidding not enabled'}</div></div>
+        <div style="text-align:right;"><div style="font-size:12px;color:var(--ink-soft);">Bids</div><div style="font-size:22px;font-weight:800;color:${topBid?'var(--gold)':'var(--ink-soft)'};">${bidCount}</div></div>
       </div>
       <div class="action-section">
-        <button class="btn-buy" onclick="openCheckout(${item.id},${item.price})">
-          ⚡ Buy Now — $${item.price.toLocaleString()}
-        </button>
+        <button class="btn-buy" onclick="openCheckout(${item.id},${item.price})">⚡ Buy Now — $${item.price.toLocaleString()}</button>
         ${bidSection}
         <div class="bid-summary">${bidStatus}${myBidNote}</div>
       </div>
@@ -507,177 +336,136 @@ function renderItems(items) {
   }).join('');
 }
 
-/* ── Slot generator: next 10 weekdays, 6 time slots each ── */
 function generateSlots() {
-  const slots = [];
-  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const times = ['9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM'];
-  let d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+1);
-  let count = 0;
-  while (count < 10) {
-    const dow = d.getDay();
-    if (dow !== 0 && dow !== 6) {
-      for (const t of times) {
-        slots.push({ day: days[dow], date: `${months[d.getMonth()]} ${d.getDate()}`, time: t,
-          value: `${days[dow]}, ${months[d.getMonth()]} ${d.getDate()} @ ${t}` });
-      }
-      count++;
-    }
-    d.setDate(d.getDate()+1);
-  }
+  const slots=[], days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], times=['9:00 AM','10:00 AM','11:00 AM','12:00 PM','1:00 PM','2:00 PM'];
+  let d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()+1); let count=0;
+  while(count<10){ const dow=d.getDay(); if(dow!==0&&dow!==6){ for(const t of times) slots.push({day:days[dow],date:`${months[d.getMonth()]} ${d.getDate()}`,time:t,value:`${days[dow]}, ${months[d.getMonth()]} ${d.getDate()} @ ${t}`}); count++; } d.setDate(d.getDate()+1); }
   return slots;
 }
 
 function openCheckout(itemId, price) {
-  const items = getItems();
-  const item = items.find(i => i.id === itemId);
-  if (!item || item.status === 'sold') { showToast('⚠️ Item no longer available'); applyFilters(); return; }
-
-  pendingItemId = itemId; pendingPrice = price; selectedSlot = null;
-
-  const nameParts = buyerName.split(' ');
-  document.getElementById('buyer-first').value = nameParts[0] || '';
-  document.getElementById('buyer-last').value = nameParts.slice(1).join(' ') || '';
-  document.getElementById('buyer-phone').value = '';
-
-  const thumb = item.photo
-    ? `<img src="${item.photo}" style="width:52px;height:52px;object-fit:cover;border-radius:10px;" alt="${item.name}">`
-    : `<div style="width:52px;height:52px;background:white;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">${getCatEmoji(item.category)}</div>`;
-
-  document.getElementById('modal-item-row').innerHTML = `
-    ${thumb}
-    <div style="flex:1;">
-      <div class="modal-item-name">${item.name}</div>
-      <div class="modal-item-price">$${price.toLocaleString()}</div>
-    </div>`;
-
-  const slots = generateSlots().slice(0, 18); // 3 days
-  document.getElementById('slots-grid').innerHTML = slots.map((s, i) => `
-    <button class="slot-btn" onclick="selectSlot(this,'${s.value}')">
-      <div class="slot-day">${s.day} · ${s.date}</div>
-      <div class="slot-time-text">${s.time}</div>
-    </button>`).join('');
-
+  const item = allItems.find(i=>i.id===itemId);
+  if (!item||item.status==='sold') { showToast('⚠️ Item no longer available'); applyFilters(); return; }
+  pendingItemId=itemId; pendingPrice=price; selectedSlot=null;
+  document.getElementById('buyer-first').value=buyerFirst;
+  document.getElementById('buyer-last').value=buyerLast;
+  document.getElementById('buyer-phone').value='';
+  const photos = item.photos ? JSON.parse(item.photos) : [];
+  const thumb = photos[0] ? `<img src="${photos[0]}" style="width:52px;height:52px;object-fit:cover;border-radius:10px;" alt="${item.name}">` : `<div style="width:52px;height:52px;background:white;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;">${getCatEmoji(item.category)}</div>`;
+  document.getElementById('modal-item-row').innerHTML=`${thumb}<div style="flex:1;"><div style="font-size:15px;font-weight:700;">${item.name}</div><div style="font-size:18px;font-weight:800;color:var(--cedar);">$${price.toLocaleString()}</div></div>`;
+  const slots=generateSlots().slice(0,18);
+  document.getElementById('slots-grid').innerHTML=slots.map((s,i)=>`<button class="slot-btn" onclick="selectSlot(this,'${s.value}')"><div class="slot-day">${s.day} · ${s.date}</div><div>${s.time}</div></button>`).join('');
   document.getElementById('checkout-modal').classList.add('open');
 }
 
-function selectSlot(btn, val) {
-  document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  selectedSlot = val;
+function selectSlot(btn,val) { document.querySelectorAll('.slot-btn').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); selectedSlot=val; }
+function closeModal() { document.getElementById('checkout-modal').classList.remove('open'); pendingItemId=null; pendingPrice=null; selectedSlot=null; }
+function closeModalOutside(e) { if(e.target===document.getElementById('checkout-modal')) closeModal(); }
+
+async function confirmPurchase() {
+  const first=document.getElementById('buyer-first').value.trim();
+  const last=document.getElementById('buyer-last').value.trim();
+  const phone=document.getElementById('buyer-phone').value.trim();
+  if(!first||!last){showToast('Please enter your full name',true);return;}
+  if(!phone){showToast('Please enter your phone number',true);return;}
+  if(!selectedSlot){showToast('Please select a pickup time',true);return;}
+  try {
+    await sbFetch(`items?id=eq.${pendingItemId}`, 'PATCH', { status:'sold', sold_to:first+' '+last, sold_phone:phone, sold_pickup:selectedSlot, sold_price:pendingPrice, sold_at:new Date().toISOString() });
+    await sbFetch('bids', 'POST', { item_id:pendingItemId, buyer_first:first, buyer_last:last, buyer_phone:phone, pickup:selectedSlot, amount:pendingPrice, type:'buy-now', time:new Date().toISOString() });
+    closeModal();
+    showToast('🎉 It\'s yours! See you '+selectedSlot+'.');
+    setTimeout(()=>applyFilters(),1000);
+  } catch(e) { showToast('Error: '+e.message.slice(0,80),true); }
 }
 
-function closeModal() {
-  document.getElementById('checkout-modal').classList.remove('open');
-  pendingItemId = null; pendingPrice = null; selectedSlot = null;
-}
-
-function closeModalOutside(e) {
-  if (e.target === document.getElementById('checkout-modal')) closeModal();
-}
-
-function confirmPurchase() {
-  const first = document.getElementById('buyer-first').value.trim();
-  const last  = document.getElementById('buyer-last').value.trim();
-  const phone = document.getElementById('buyer-phone').value.trim();
-  if (!first || !last) { showToast('Please enter your full name', true); return; }
-  if (!phone) { showToast('Please enter your phone number', true); return; }
-  if (!selectedSlot) { showToast('Please select a pickup time slot', true); return; }
-
-  const items = getItems();
-  const item = items.find(i => i.id === pendingItemId);
-  if (!item || item.status === 'sold') { showToast('⚠️ Item just sold — so sorry!', true); closeModal(); applyFilters(); return; }
-
-  item.status = 'sold';
-  item.soldTo = `${first} ${last}`;
-  item.soldPhone = phone;
-  item.soldPickup = selectedSlot;
-  item.soldAt = new Date().toISOString();
-  item.soldPrice = pendingPrice;
-  saveItems(items);
-
-  const bids = getBids();
-  bids.push({
-    itemId: pendingItemId,
-    buyerFirstName: first,
-    buyerLastName: last,
-    buyerPhone: phone,
-    pickup: selectedSlot,
-    amount: pendingPrice,
-    type: 'buy-now',
-    time: new Date().toISOString()
-  });
-  saveBids(bids);
-
-  closeModal();
-  showToast(`🎉 It's yours! See you ${selectedSlot}.`);
-  setTimeout(() => applyFilters(), 1200);
-}
-
-function placeBid(itemId, listPrice) {
-  const bids = getBids();
-  const itemBids = bids.filter(b => b.itemId === itemId).sort((a,b) => b.amount - a.amount);
+async function placeBid(itemId, listPrice) {
+  const item = allItems.find(i=>i.id===itemId);
+  const itemBids = allBids.filter(b=>b.item_id===itemId).sort((a,b)=>b.amount-a.amount);
   const topBid = itemBids[0];
-  const item = getItems().find(i => i.id === itemId);
-  const effectiveMin = topBid ? topBid.amount + 10 : (item?.minBid || 1);
-
-  const input = document.getElementById('bid-' + itemId);
+  const effectiveMin = topBid ? topBid.amount+10 : (item?.min_bid||1);
+  const input = document.getElementById('bid-'+itemId);
   const amount = parseFloat(input.value);
-
-  if (!amount || isNaN(amount)) { showToast('Enter a bid amount', true); return; }
-  if (amount < effectiveMin) { showToast(`Minimum bid is $${effectiveMin}`, true); return; }
-  if (amount >= listPrice) { input.value = ''; openCheckout(itemId, listPrice); return; }
-
-  bids.push({ itemId, buyerFirstName: buyerName, amount, type: 'bid', time: new Date().toISOString() });
-  saveBids(bids);
-
-  // Bump the item's stored minBid so the card reflects it instantly
-  const items = getItems();
-  const it = items.find(i => i.id === itemId);
-  if (it) { it.minBid = amount + 10; saveItems(items); }
-
-  input.value = '';
-  showToast(`✅ Bid of $${amount.toLocaleString()} placed! New min: $${amount + 10}`);
-  applyFilters();
+  if(!amount||isNaN(amount)){showToast('Enter a bid amount',true);return;}
+  if(amount<effectiveMin){showToast(`Minimum bid is $${effectiveMin}`,true);return;}
+  if(amount>=listPrice){input.value='';openCheckout(itemId,listPrice);return;}
+  try {
+    await sbFetch('bids','POST',{item_id:itemId,buyer_first:buyerFirst,buyer_last:buyerLast,amount,type:'bid',time:new Date().toISOString()});
+    await sbFetch(`items?id=eq.${itemId}`,'PATCH',{min_bid:amount+10});
+    input.value='';
+    showToast(`✅ Bid of $${amount.toLocaleString()} placed! New min: $${amount+10}`);
+    applyFilters();
+  } catch(e){showToast('Error: '+e.message.slice(0,80),true);}
 }
 
-const carouselState = {};
-function carouselMove(id, dir) {
-  if (!carouselState[id]) carouselState[id] = 0;
-  const track = document.getElementById('track-' + id);
-  const dots = document.getElementById('dots-' + id);
-  const total = track.children.length;
-  let idx = carouselState[id] + dir;
-  if (idx < 0) idx = total - 1;
-  if (idx >= total) idx = 0;
-  carouselState[id] = idx;
-  track.style.transform = `translateX(-${idx * 100}%)`;
-  dots.querySelectorAll('.carousel-dot').forEach((d,i) => d.classList.toggle('active', i===idx));
+const carouselState={};
+function carouselMove(id,dir){
+  if(!carouselState[id]) carouselState[id]=0;
+  const track=document.getElementById('track-'+id), dots=document.getElementById('dots-'+id);
+  const total=track.children.length;
+  let idx=carouselState[id]+dir;
+  if(idx<0) idx=total-1; if(idx>=total) idx=0;
+  carouselState[id]=idx;
+  track.style.transform=`translateX(-${idx*100}%)`;
+  dots.querySelectorAll('.carousel-dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
 }
 
-function showToast(msg, isError = false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.style.background = isError ? 'var(--danger)' : 'var(--cedar)';
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3200);
+// ── Lightbox ──
+let lightboxPhotos = [];
+let lightboxIdx = 0;
+
+function openLightbox(itemId, startIdx) {
+  const item = allItems.find(i=>i.id===itemId);
+  if (!item) return;
+  lightboxPhotos = item.photos ? JSON.parse(item.photos) : (item.photo ? [item.photo] : []);
+  if (!lightboxPhotos.length) return;
+  lightboxIdx = startIdx || 0;
+  renderLightbox();
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
-// Wire up gate + auto-login returning buyers who already authenticated
-document.addEventListener('DOMContentLoaded', function() {
-  const savedName = localStorage.getItem('baklini_buyer_name');
-  const savedAuth = localStorage.getItem('baklini_buyer_auth');
-  if (savedName && savedAuth === 'true') {
-    buyerName = savedName;
+function renderLightbox() {
+  document.getElementById('lightbox-img').src = lightboxPhotos[lightboxIdx];
+  document.getElementById('lightbox-counter').textContent = (lightboxIdx+1) + ' / ' + lightboxPhotos.length;
+  const thumbs = document.getElementById('lightbox-thumbs');
+  thumbs.innerHTML = lightboxPhotos.map((p,i)=>`<img class="lightbox-thumb${i===lightboxIdx?' active':''}" src="${p}" onclick="lightboxGoTo(${i})">`).join('');
+}
+
+function lightboxNav(dir) {
+  lightboxIdx = (lightboxIdx+dir+lightboxPhotos.length) % lightboxPhotos.length;
+  renderLightbox();
+}
+
+function lightboxGoTo(i) { lightboxIdx=i; renderLightbox(); }
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key==='ArrowRight') lightboxNav(1);
+  if (e.key==='ArrowLeft') lightboxNav(-1);
+  if (e.key==='Escape') closeLightbox();
+});
+
+function showToast(msg,isError=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.background=isError?'var(--danger)':'var(--cedar)';
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  const savedFirst=localStorage.getItem('baklini_buyer_first');
+  const savedLast=localStorage.getItem('baklini_buyer_last');
+  if(savedFirst&&savedLast){
+    buyerFirst=savedFirst; buyerLast=savedLast; buyerName=savedFirst+' '+savedLast;
     showStore();
-    setTimeout(() => showToast('👋 Welcome back, ' + savedName.split(' ')[0] + '!'), 300);
   }
-  document.getElementById('gate-btn').addEventListener('click', enterSale);
-  ['gate-first','gate-last','gate-password'].forEach(function(id) {
-    document.getElementById(id).addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') enterSale();
-    });
+  document.getElementById('gate-btn').addEventListener('click',enterSale);
+  ['gate-first','gate-last','gate-password'].forEach(id=>{
+    document.getElementById(id).addEventListener('keydown',function(e){if(e.key==='Enter')enterSale();});
   });
 });
 </script>
