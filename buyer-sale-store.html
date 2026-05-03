@@ -248,10 +248,16 @@
 <div id="name-gate">
   <div class="gate-logo">🏡</div>
   <div class="gate-title">Baklini Home Sale</div>
-  <div class="gate-sub">You've been personally invited.<br>Enter your name to browse and bid.</div>
-  <input class="gate-input" id="gate-name" placeholder="Your first name" type="text"
-    onkeydown="if(event.key==='Enter')enterSale()">
-  <button class="gate-btn" onclick="enterSale()">Browse the Sale →</button>
+  <div class="gate-sub">You've been personally invited.<br>Enter your details to browse and bid.</div>
+  <div style="width:100%;max-width:320px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <input class="gate-input" id="gate-first" placeholder="First name" type="text" style="margin:0;">
+      <input class="gate-input" id="gate-last" placeholder="Last name" type="text" style="margin:0;">
+    </div>
+    <input class="gate-input" id="gate-password" placeholder="Access password" type="password" style="margin-bottom:10px;">
+    <div id="gate-error" style="color:#ffaaaa;font-size:13px;margin-bottom:8px;min-height:18px;"></div>
+  </div>
+  <button class="gate-btn" id="gate-btn">Browse the Sale →</button>
   <div class="gate-rules">
     📋 <strong style="color:white;">How it works:</strong><br>
     • Pay listing price = yours immediately<br>
@@ -358,13 +364,32 @@ function getCatEmoji(cat) {
   return '📦';
 }
 
+// ── Change this password to whatever you share with guests ──
+const SALE_PASSWORD = 'lebanon2025';
+
 function enterSale() {
-  const n = document.getElementById('gate-name').value.trim();
-  if (!n) { document.getElementById('gate-name').focus(); return; }
-  buyerName = n;
+  const first = document.getElementById('gate-first').value.trim();
+  const last  = document.getElementById('gate-last').value.trim();
+  const pass  = document.getElementById('gate-password').value.trim();
+  const errEl = document.getElementById('gate-error');
+
+  if (!first || !last) { errEl.textContent = 'Please enter your first and last name.'; return; }
+  if (!pass) { errEl.textContent = 'Please enter the access password.'; return; }
+  if (pass.toLowerCase() !== SALE_PASSWORD.toLowerCase()) {
+    errEl.textContent = '❌ Wrong password — contact Johnny or Elsy for access.';
+    document.getElementById('gate-password').value = '';
+    return;
+  }
+
+  buyerName = first + ' ' + last;
+  localStorage.setItem('baklini_buyer_name', buyerName);
+  localStorage.setItem('baklini_buyer_auth', 'true');
+  showStore();
+}
+
+function showStore() {
   document.getElementById('name-gate').style.display = 'none';
   document.getElementById('main-store').style.display = 'block';
-  // Small delay so DOM is visible before we query elements inside it
   setTimeout(() => applyFilters(), 50);
 }
 
@@ -511,8 +536,9 @@ function openCheckout(itemId, price) {
 
   pendingItemId = itemId; pendingPrice = price; selectedSlot = null;
 
-  document.getElementById('buyer-first').value = buyerName || '';
-  document.getElementById('buyer-last').value = '';
+  const nameParts = buyerName.split(' ');
+  document.getElementById('buyer-first').value = nameParts[0] || '';
+  document.getElementById('buyer-last').value = nameParts.slice(1).join(' ') || '';
   document.getElementById('buyer-phone').value = '';
 
   const thumb = item.photo
@@ -630,12 +656,30 @@ function carouselMove(id, dir) {
   dots.querySelectorAll('.carousel-dot').forEach((d,i) => d.classList.toggle('active', i===idx));
 }
 
-
+function showToast(msg, isError = false) {
   const t = document.getElementById('toast');
-  t.textContent = msg; t.style.background = isError ? 'var(--danger)' : 'var(--cedar)';
+  t.textContent = msg;
+  t.style.background = isError ? 'var(--danger)' : 'var(--cedar)';
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3200);
 }
+
+// Wire up gate + auto-login returning buyers who already authenticated
+document.addEventListener('DOMContentLoaded', function() {
+  const savedName = localStorage.getItem('baklini_buyer_name');
+  const savedAuth = localStorage.getItem('baklini_buyer_auth');
+  if (savedName && savedAuth === 'true') {
+    buyerName = savedName;
+    showStore();
+    setTimeout(() => showToast('👋 Welcome back, ' + savedName.split(' ')[0] + '!'), 300);
+  }
+  document.getElementById('gate-btn').addEventListener('click', enterSale);
+  ['gate-first','gate-last','gate-password'].forEach(function(id) {
+    document.getElementById(id).addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') enterSale();
+    });
+  });
+});
 </script>
 </body>
 </html>
