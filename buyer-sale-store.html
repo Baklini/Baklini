@@ -65,11 +65,6 @@
   .price-sub { font-size: 12px; color: var(--ink-soft); }
   .action-section { padding: 0 16px 16px; }
   .btn-buy { width: 100%; background: var(--gold); color: white; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 8px; font-family: inherit; }
-  .bid-row { display: flex; gap: 8px; margin-bottom: 8px; }
-  .bid-input { flex: 1; border: 1.5px solid var(--border); border-radius: 12px; padding: 12px 14px; font-size: 16px; font-weight: 700; color: var(--ink); outline: none; text-align: center; font-family: inherit; }
-  .bid-input:focus { border-color: var(--cedar); }
-  .btn-bid { background: var(--cedar); color: white; border: none; border-radius: 12px; padding: 12px 18px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
-  .bid-summary { font-size: 12px; color: var(--ink-soft); text-align: center; line-height: 1.7; }
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 200; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .25s; }
   .modal-overlay.open { opacity: 1; pointer-events: all; }
   .modal-sheet { background: white; width: 100%; max-width: 480px; border-radius: 22px 22px 0 0; padding: 22px 20px 44px; transform: translateY(100%); transition: transform .3s ease; max-height: 92vh; overflow-y: auto; }
@@ -292,10 +287,7 @@ function renderItems(items, bids) {
   if (!items.length) { grid.innerHTML='<div class="empty-state"><div class="empty-icon">🏡</div><div class="empty-text">No items listed yet</div><div class="empty-sub">Check back soon — items are being added!</div></div>'; return; }
   grid.innerHTML = items.map(item => {
     const itemBids = bids.filter(b=>b.item_id===item.id).sort((a,b)=>b.amount-a.amount);
-    const topBid = itemBids[0];
     const myBid = itemBids.find(b=>(b.buyer_first+' '+b.buyer_last)===buyerName);
-    const bidCount = itemBids.length;
-    const effectiveMin = topBid ? topBid.amount+10 : (item.min_bid||null);
     const photos = item.photos ? JSON.parse(item.photos) : [];
 
     let photoEl;
@@ -310,9 +302,6 @@ function renderItems(items, bids) {
     }
 
     const notesHtml = item.notes ? `<div class="item-notes">📋 ${item.notes}</div>` : '';
-    const bidStatus = topBid ? `Top bid: <strong>$${topBid.amount.toLocaleString()}</strong> · ${bidCount} bid${bidCount!==1?'s':''} · next min $${effectiveMin}` : `No bids yet — be the first!`;
-    const myBidNote = myBid ? `<br>Your bid: <strong style="color:var(--cedar)">$${myBid.amount}</strong>${myBid.amount===topBid?.amount?' 🏆 Winning!':''}` : '';
-    const bidSection = effectiveMin ? `<div class="bid-row"><input type="number" class="bid-input" id="bid-${item.id}" placeholder="Min $${effectiveMin}" min="${effectiveMin}" step="5"><button class="btn-bid" onclick="placeBid(${item.id},${item.price})">Bid</button></div>` : '';
 
     return `<div class="item-card" id="card-${item.id}">
       ${photoEl}
@@ -324,13 +313,11 @@ function renderItems(items, bids) {
         ${notesHtml}
       </div>
       <div class="price-section">
-        <div><div class="price-label">Buy It Now</div><div class="price-value">$${item.price.toLocaleString()}</div><div class="price-sub">${effectiveMin?`Min bid: $${effectiveMin}`:'Bidding not enabled'}</div></div>
-        <div style="text-align:right;"><div style="font-size:12px;color:var(--ink-soft);">Bids</div><div style="font-size:22px;font-weight:800;color:${topBid?'var(--gold)':'var(--ink-soft)'};">${bidCount}</div></div>
+        <div><div class="price-label">Buy It Now</div><div class="price-value">$${item.price.toLocaleString()}</div><div class="price-sub">Pickup only · As-is sale</div></div>
+
       </div>
       <div class="action-section">
         <button class="btn-buy" onclick="openCheckout(${item.id},${item.price})">⚡ Buy Now — $${item.price.toLocaleString()}</button>
-        ${bidSection}
-        <div class="bid-summary">${bidStatus}${myBidNote}</div>
       </div>
     </div>`;
   }).join('');
@@ -378,24 +365,7 @@ async function confirmPurchase() {
   } catch(e) { showToast('Error: '+e.message.slice(0,80),true); }
 }
 
-async function placeBid(itemId, listPrice) {
-  const item = allItems.find(i=>i.id===itemId);
-  const itemBids = allBids.filter(b=>b.item_id===itemId).sort((a,b)=>b.amount-a.amount);
-  const topBid = itemBids[0];
-  const effectiveMin = topBid ? topBid.amount+10 : (item?.min_bid||1);
-  const input = document.getElementById('bid-'+itemId);
-  const amount = parseFloat(input.value);
-  if(!amount||isNaN(amount)){showToast('Enter a bid amount',true);return;}
-  if(amount<effectiveMin){showToast(`Minimum bid is $${effectiveMin}`,true);return;}
-  if(amount>=listPrice){input.value='';openCheckout(itemId,listPrice);return;}
-  try {
-    await sbFetch('bids','POST',{item_id:itemId,buyer_first:buyerFirst,buyer_last:buyerLast,amount,type:'bid',time:new Date().toISOString()});
-    await sbFetch(`items?id=eq.${itemId}`,'PATCH',{min_bid:amount+10});
-    input.value='';
-    showToast(`✅ Bid of $${amount.toLocaleString()} placed! New min: $${amount+10}`);
-    applyFilters();
-  } catch(e){showToast('Error: '+e.message.slice(0,80),true);}
-}
+
 
 const carouselState={};
 function carouselMove(id,dir){

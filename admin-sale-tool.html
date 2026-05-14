@@ -168,7 +168,6 @@
     </div>
     <div class="form-row"><label>Description</label><textarea id="item-description" placeholder="Details, dimensions, age, brand..."></textarea></div>
     <div class="form-row"><label>Listing Price (Buy It Now) $</label><input type="number" id="item-price" placeholder="0.00" min="0" oninput="checkForm()"></div>
-    <div class="form-row"><label>Minimum Bid $ (optional)</label><input type="number" id="item-min-bid" placeholder="Leave blank to disable bidding"></div>
     <div class="form-row"><label>Notes for Buyers</label><textarea id="item-notes" placeholder="e.g. Needs 2 people to move..." style="min-height:60px;"></textarea></div>
 
     <div class="form-row">
@@ -218,10 +217,6 @@
   <div class="card">
     <div class="section-label">📅 Pickup Schedule</div>
     <div id="pickup-schedule"></div>
-  </div>
-  <div class="card">
-    <div class="section-label">💰 All Bids</div>
-    <div id="bids-overview"></div>
   </div>
   <div class="card" style="border-color:var(--cedar);background:var(--cedar-pale);">
     <div class="section-label">📋 Buyer Rules</div>
@@ -413,7 +408,7 @@ async function addItem() {
     condition: document.getElementById('item-condition').value,
     description: document.getElementById('item-description').value.trim(),
     price: parseFloat(document.getElementById('item-price').value),
-    min_bid: parseFloat(document.getElementById('item-min-bid').value) || null,
+    min_bid: null,
     notes: document.getElementById('item-notes').value.trim(),
     photos: JSON.stringify(compressed),
     status: 'available',
@@ -470,8 +465,8 @@ async function renderListings(filter) {
   grid.innerHTML = filtered.map(item => {
     const itemBids = bids.filter(b=>b.item_id===item.id).sort((a,b)=>b.amount-a.amount);
     const topBid = itemBids[0];
-    const statusClass = item.status==='sold'?'status-sold':topBid?'status-bid':'status-available';
-    const statusText = item.status==='sold'?`🔴 Sold to ${item.sold_to||'buyer'}`:topBid?`🟡 Top bid $${topBid.amount}`:'🟢 Available';
+    const statusClass = item.status==='sold'?'status-sold':'status-available';
+    const statusText = item.status==='sold'?`🔴 Sold to ${item.sold_to||'buyer'}`:'🟢 Available';
     const photos = item.photos ? JSON.parse(item.photos) : [];
     const thumb = photos[0] ? `<img src="${photos[0]}" alt="${item.name}">` : `<div style="width:90px;height:90px;display:flex;align-items:center;justify-content:center;font-size:32px;">${getCatEmoji(item.category)}</div>`;
     const photoCount = photos.length;
@@ -482,14 +477,12 @@ async function renderListings(filter) {
           <div class="listing-info">
             <div class="listing-name">${item.name}</div>
             <div class="listing-cat">${item.category} · ${item.condition}${photoCount>1?' · '+photoCount+' photos':''}${item.quantity>1?' · Qty: '+item.quantity+(item.price_type==='bulk'?' (bulk)':' ea'):''}</div>
-            <div class="listing-prices"><div class="listing-price">$${item.price.toLocaleString()}</div>${item.min_bid?`<div class="listing-min-bid">min bid $${item.min_bid}</div>`:''}</div>
+            <div class="listing-prices"><div class="listing-price">$${item.price.toLocaleString()}</div></div>
             <div class="listing-status ${statusClass}">${statusText}</div>
           </div>
         </div>
         <div class="listing-actions">
-          <button class="action-btn" onclick="viewBids(${item.id})">Bids (${itemBids.length})</button>
-          <button class="action-btn" onclick="undoLastBid(${item.id})" title="Undo last bid">↩ Bid</button>
-          <button class="action-btn primary" onclick="markSold(${item.id},'${item.status}')">${item.status==='sold'?'Relist':'✓ Sold'}</button>
+<button class="action-btn primary" onclick="markSold(${item.id},'${item.status}')">${item.status==='sold'?'Relist':'✓ Sold'}</button>
           <button class="action-btn danger" onclick="deleteItem(${item.id})">Del</button>
         </div>
       </div>
@@ -545,11 +538,7 @@ async function renderOverview() {
     const item = items.find(i=>i.id===b.item_id);
     return `<div class="pickup-row"><div style="font-size:20px;">📦</div><div><div style="font-size:14px;font-weight:700;">${b.buyer_first||''} ${b.buyer_last||''}</div><div style="font-size:12px;color:var(--cedar);">${item?item.name:'Item'} — $${b.amount}</div><div style="font-size:12px;color:var(--ink-soft);">📅 ${b.pickup}</div>${b.buyer_phone?`<div style="font-size:12px;color:var(--ink-soft);">📞 ${b.buyer_phone}</div>`:''}</div></div>`;
   }).join('') : '<p style="font-size:14px;color:var(--ink-soft);">No pickups scheduled yet.</p>';
-  const bidsEl = document.getElementById('bids-overview');
-  bidsEl.innerHTML = bids.length ? bids.slice(0,20).map(b=>{
-    const item = items.find(i=>i.id===b.item_id);
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);"><div><div style="font-size:14px;font-weight:700;">${b.buyer_first||''} ${b.buyer_last||''}</div><div style="font-size:12px;color:var(--ink-soft);">${item?item.name:'Unknown'} · ${b.type}</div></div><div style="font-size:16px;font-weight:800;color:var(--cedar);">$${b.amount}</div></div>`;
-  }).join('') : '<p style="font-size:14px;color:var(--ink-soft);">No bids yet.</p>';
+
 }
 
 function copyBuyerLink() { navigator.clipboard.writeText('https://baklini.github.io/Baklini/buyer-sale-store.html').catch(()=>{}); showToast('📋 Buyer link copied!'); }
