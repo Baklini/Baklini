@@ -90,6 +90,16 @@
   .empty-sub { font-size: 13px; margin-top: 6px; }
   select { cursor: pointer; }
   .sync-badge { font-size: 11px; padding: 3px 10px; border-radius: 10px; font-weight: 600; }
+  .edit-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 200; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .edit-modal-overlay.open { opacity: 1; pointer-events: all; }
+  .edit-modal-sheet { background: white; width: 100%; max-width: 480px; border-radius: 22px 22px 0 0; padding: 22px 20px 44px; transform: translateY(100%); transition: transform .3s ease; max-height: 90vh; overflow-y: auto; }
+  .edit-modal-overlay.open .edit-modal-sheet { transform: translateY(0); }
+  .edit-handle { width: 40px; height: 4px; background: #ddd; border-radius: 4px; margin: 0 auto 18px; }
+  .edit-field-label { font-size: 12px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; display: block; }
+  .edit-field-input { width: 100%; border: 1.5px solid var(--border); border-radius: 11px; padding: 12px 14px; font-size: 15px; color: var(--ink); outline: none; font-family: inherit; margin-bottom: 14px; }
+  .edit-field-input:focus { border-color: var(--cedar); }
+  .edit-save-btn { width: 100%; background: var(--gold); color: white; border: none; border-radius: 13px; padding: 15px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; margin-bottom: 10px; }
+  .edit-cancel-btn { width: 100%; background: none; color: var(--ink-soft); border: none; padding: 10px; font-size: 14px; cursor: pointer; font-family: inherit; }
   .sync-ok { background: #E8F5E9; color: #2E7D32; }
   .sync-err { background: var(--danger-pale); color: var(--danger); }
   .qty-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
@@ -230,6 +240,47 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- Edit Modal -->
+<div class="edit-modal-overlay" id="edit-modal" onclick="closeEditModalOutside(event)">
+  <div class="edit-modal-sheet">
+    <div class="edit-handle"></div>
+    <div style="font-size:18px;font-weight:800;margin-bottom:4px;">Edit Listing</div>
+    <div style="font-size:13px;color:var(--ink-soft);margin-bottom:18px;">Changes save instantly to the store.</div>
+
+    <div id="edit-item-name-row">
+      <label class="edit-field-label">Item Name</label>
+      <input class="edit-field-input" id="edit-name" type="text" placeholder="Item name">
+    </div>
+
+    <label class="edit-field-label">Category</label>
+    <select class="edit-field-input" id="edit-category">
+      <option>📺 Electronics</option><option>🛋️ Furniture</option>
+      <option>🍳 Kitchen & Utensils</option><option>🖼️ Decor & Art</option>
+      <option>🛏️ Bedroom</option><option>🏡 Outdoor & Garden</option>
+      <option>👕 Clothing & Accessories</option><option>📚 Books & Media</option>
+      <option>🧸 Kids & Toys</option><option>🔧 Tools & Hardware</option>
+      <option>🚲 Sports & Fitness</option><option>✨ Other</option>
+    </select>
+
+    <label class="edit-field-label">Condition</label>
+    <select class="edit-field-input" id="edit-condition">
+      <option>Like New</option><option>Excellent</option><option>Good</option><option>Fair</option>
+    </select>
+
+    <label class="edit-field-label">Price $ (Buy It Now)</label>
+    <input class="edit-field-input" id="edit-price" type="number" min="0" placeholder="0.00">
+
+    <label class="edit-field-label">Description</label>
+    <textarea class="edit-field-input" id="edit-description" style="min-height:80px;resize:vertical;line-height:1.5;"></textarea>
+
+    <label class="edit-field-label">Notes for Buyers</label>
+    <textarea class="edit-field-input" id="edit-notes" style="min-height:60px;resize:vertical;line-height:1.5;"></textarea>
+
+    <button class="edit-save-btn" onclick="saveEdit()">💾 Save Changes</button>
+    <button class="edit-cancel-btn" onclick="closeEditModal()">Cancel</button>
+  </div>
+</div>
 
 <script>
 const SB_URL = 'https://rvnjdkdkqsqvvmjoevnl.supabase.co';
@@ -482,7 +533,8 @@ async function renderListings(filter) {
           </div>
         </div>
         <div class="listing-actions">
-<button class="action-btn primary" onclick="markSold(${item.id},'${item.status}')">${item.status==='sold'?'Relist':'✓ Sold'}</button>
+<button class="action-btn" onclick="openEditModal(${item.id})">✏️ Edit</button>
+          <button class="action-btn primary" onclick="markSold(${item.id},'${item.status}')">${item.status==='sold'?'Relist':'✓ Sold'}</button>
           <button class="action-btn danger" onclick="deleteItem(${item.id})">Del</button>
         </div>
       </div>
@@ -542,6 +594,55 @@ async function renderOverview() {
 }
 
 function copyBuyerLink() { navigator.clipboard.writeText('https://baklini.github.io/Baklini/buyer-sale-store.html').catch(()=>{}); showToast('📋 Buyer link copied!'); }
+
+let editingItemId = null;
+
+async function openEditModal(id) {
+  const items = await getItems();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  editingItemId = id;
+  document.getElementById('edit-name').value = item.name || '';
+  document.getElementById('edit-category').value = item.category || '';
+  document.getElementById('edit-condition').value = item.condition || '';
+  document.getElementById('edit-price').value = item.price || '';
+  document.getElementById('edit-description').value = item.description || '';
+  document.getElementById('edit-notes').value = item.notes || '';
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+async function saveEdit() {
+  if (!editingItemId) return;
+  const name = document.getElementById('edit-name').value.trim();
+  const price = parseFloat(document.getElementById('edit-price').value);
+  if (!name) { showToast('Name cannot be empty', true); return; }
+  if (!price || isNaN(price)) { showToast('Enter a valid price', true); return; }
+  try {
+    await sbFetch(`items?id=eq.${editingItemId}`, 'PATCH', {
+      name,
+      category: document.getElementById('edit-category').value,
+      condition: document.getElementById('edit-condition').value,
+      price,
+      description: document.getElementById('edit-description').value.trim(),
+      notes: document.getElementById('edit-notes').value.trim()
+    });
+    closeEditModal();
+    showToast('✅ Listing updated!');
+    renderListings('all');
+    document.querySelectorAll('.filter-chip').forEach((c,i) => c.classList.toggle('active', i===0));
+  } catch(e) {
+    showToast('Error: ' + e.message.slice(0,80), true);
+  }
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+  editingItemId = null;
+}
+
+function closeEditModalOutside(e) {
+  if (e.target === document.getElementById('edit-modal')) closeEditModal();
+}
 
 function showToast(msg, isError=false) {
   const t = document.getElementById('toast');
