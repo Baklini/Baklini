@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baklini Home Sale — Admin</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cedar: #2D4A3E; --cedar-light: #3D6354; --cedar-pale: #EAF2EE;
+    --gold: #C9973A; --gold-pale: #FDF6E9;
+    --ink: #1A1A1A; --ink-soft: #555;
+    --border: #D8E4DF; --surface: #F7FAF8;
+    --danger: #C0392B; --danger-pale: #FDEAEA;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--surface); color: var(--ink); min-height: 100vh; padding-bottom: 60px; }
+  .header { background: var(--cedar); color: white; padding: 20px 20px 0; position: sticky; top: 0; z-index: 100; }
+  .header-top { display: flex; align-items: center; justify-content: space-between; padding-bottom: 12px; }
+  .header h1 { font-size: 18px; font-weight: 700; }
+  .header p { font-size: 12px; opacity: 0.7; margin-top: 2px; }
+  .header-badge { background: var(--gold); color: white; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+  .nav-tabs { display: flex; background: var(--cedar-light); padding: 0 16px; gap: 4px; }
+  .nav-tab { flex: 1; text-align: center; padding: 10px 8px; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.6); cursor: pointer; border-bottom: 2px solid transparent; }
+  .nav-tab.active { color: white; border-bottom-color: var(--gold); }
+  .page { display: none; padding: 16px; }
+  .page.active { display: block; }
+  .section-label { font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--cedar); margin: 0 0 12px; }
+  .card { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 18px; margin-bottom: 14px; }
+  .photos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+  .photo-slot { aspect-ratio: 1; border-radius: 10px; overflow: hidden; position: relative; background: var(--cedar-pale); border: 2px dashed var(--border); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .photo-slot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo-slot .slot-empty { text-align: center; }
+  .photo-slot .slot-empty span { font-size: 24px; display: block; margin-bottom: 4px; }
+  .photo-slot .slot-empty p { font-size: 10px; color: var(--cedar); font-weight: 600; }
+  .photo-slot .remove-photo { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.65); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 13px; cursor: pointer; line-height: 22px; text-align: center; }
+  .photo-slot.is-main::after { content: 'MAIN'; position: absolute; bottom: 0; left: 0; right: 0; background: rgba(45,74,62,0.85); color: white; font-size: 9px; font-weight: 700; text-align: center; padding: 3px 0; letter-spacing: 1px; }
+  .photo-slot input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .photo-hint { font-size: 12px; color: var(--ink-soft); margin-bottom: 14px; line-height: 1.5; }
+  .ai-analyze-btn { width: 100%; background: var(--cedar); color: white; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; font-family: inherit; }
+  .ai-analyze-btn:disabled { background: #aaa; cursor: not-allowed; }
+  .api-key-label { font-size: 11px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
+  .api-key-hint { font-size: 11px; color: var(--ink-soft); margin-bottom: 8px; line-height: 1.5; }
+  .ai-result { background: var(--gold-pale); border: 1px solid #E8D5A3; border-radius: 12px; padding: 14px; margin-bottom: 14px; display: none; }
+  .ai-result.show { display: block; }
+  .ai-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+  .ai-price-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .ai-price-value { font-size: 22px; font-weight: 700; color: var(--cedar); }
+  .form-row { margin-bottom: 14px; }
+  .form-row label { display: block; font-size: 12px; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .form-row input, .form-row select, .form-row textarea { width: 100%; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-size: 15px; color: var(--ink); background: white; appearance: none; -webkit-appearance: none; outline: none; font-family: inherit; }
+  .form-row input:focus, .form-row select:focus, .form-row textarea:focus { border-color: var(--cedar); }
+  .form-row textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+  .submit-btn { width: 100%; background: var(--gold); color: white; border: none; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 6px; font-family: inherit; }
+  .submit-btn:disabled { background: #bbb; cursor: not-allowed; }
+  .filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 14px; scrollbar-width: none; }
+  .filters::-webkit-scrollbar { display: none; }
+  .filter-chip { white-space: nowrap; padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; border: 1.5px solid var(--border); background: white; color: var(--ink-soft); cursor: pointer; flex-shrink: 0; }
+  .filter-chip.active { background: var(--cedar); color: white; border-color: var(--cedar); }
+  .listings-grid { display: flex; flex-direction: column; gap: 12px; }
+  .listing-card { background: white; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .listing-top { display: flex; }
+  .listing-thumb { width: 90px; height: 90px; flex-shrink: 0; background: var(--cedar-pale); display: flex; align-items: center; justify-content: center; font-size: 32px; }
+  .listing-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  .listing-info { flex: 1; padding: 12px 14px; min-width: 0; }
+  .listing-name { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .listing-cat { font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+  .listing-prices { display: flex; align-items: baseline; gap: 8px; margin-top: 6px; }
+  .listing-price { font-size: 17px; font-weight: 700; color: var(--cedar); }
+  .listing-min-bid { font-size: 12px; color: var(--ink-soft); }
+  .listing-status { display: inline-block; padding: 3px 9px; border-radius: 10px; font-size: 11px; font-weight: 700; margin-top: 6px; }
+  .status-available { background: #E8F5E9; color: #2E7D32; }
+  .status-bid { background: #FFF3E0; color: #E65100; }
+  .status-sold { background: var(--danger-pale); color: var(--danger); }
+  .listing-actions { display: flex; gap: 6px; padding: 8px 12px; border-top: 1px solid var(--border); background: var(--surface); }
+  .action-btn { flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: white; color: var(--ink-soft); font-family: inherit; }
+  .action-btn.primary { background: var(--cedar); color: white; border-color: var(--cedar); }
+  .action-btn.danger { color: var(--danger); border-color: #F5B5B5; }
+  .pickup-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .pickup-row:last-child { border-bottom: none; }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .stat-box { background: white; border: 1px solid var(--border); border-radius: 14px; padding: 14px; text-align: center; }
+  .stat-num { font-size: 26px; font-weight: 700; color: var(--cedar); }
+  .stat-label { font-size: 12px; color: var(--ink-soft); margin-top: 3px; }
+  .mandatory-note { background: var(--cedar-pale); border-left: 3px solid var(--cedar); padding: 10px 14px; border-radius: 0 8px 8px 0; font-size: 13px; color: var(--cedar); margin-bottom: 14px; line-height: 1.5; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--cedar); color: white; padding: 12px 24px; border-radius: 30px; font-size: 14px; font-weight: 600; z-index: 999; transition: transform 0.3s ease; white-space: nowrap; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .empty-state { text-align: center; padding: 50px 20px; color: var(--ink-soft); }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-text { font-size: 16px; font-weight: 600; }
+  .empty-sub { font-size: 13px; margin-top: 6px; }
+  select { cursor: pointer; }
+  .sync-badge { font-size: 11px; padding: 3px 10px; border-radius: 10px; font-weight: 600; }
+  .edit-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 200; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .edit-modal-overlay.open { opacity: 1; pointer-events: all; }
+  .edit-modal-sheet { background: white; width: 100%; max-width: 480px; border-radius: 22px 22px 0 0; padding: 22px 20px 44px; transform: translateY(100%); transition: transform .3s ease; max-height: 90vh; overflow-y: auto; }
+  .edit-modal-overlay.open .edit-modal-sheet { transform: translateY(0); }
+  .edit-handle { width: 40px; height: 4px; background: #ddd; border-radius: 4px; margin: 0 auto 18px; }
+  .edit-field-label { font-size: 12px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; display: block; }
+  .edit-field-input { width: 100%; border: 1.5px solid var(--border); border-radius: 11px; padding: 12px 14px; font-size: 15px; color: var(--ink); outline: none; font-family: inherit; margin-bottom: 14px; }
+  .edit-field-input:focus { border-color: var(--cedar); }
+  .edit-save-btn { width: 100%; background: var(--gold); color: white; border: none; border-radius: 13px; padding: 15px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; margin-bottom: 10px; }
+  .edit-cancel-btn { width: 100%; background: none; color: var(--ink-soft); border: none; padding: 10px; font-size: 14px; cursor: pointer; font-family: inherit; }
+  .sync-ok { background: #E8F5E9; color: #2E7D32; }
+  .sync-err { background: var(--danger-pale); color: var(--danger); }
+  .qty-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
+  .qty-btn { flex: 1; padding: 10px; border-radius: 10px; border: 1.5px solid var(--border); background: white; color: var(--ink-soft); font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; text-align: center; transition: all .15s; }
+  .qty-btn.active { background: var(--cedar); color: white; border-color: var(--cedar); }
+  .extra-prompt-box { width: 100%; border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; font-size: 13px; color: var(--ink); background: white; outline: none; font-family: inherit; resize: vertical; min-height: 70px; line-height: 1.5; }
+  .extra-prompt-box:focus { border-color: var(--cedar); }
+  .undo-btn { background: none; border: 1.5px solid var(--border); border-radius: 10px; padding: 8px 14px; font-size: 13px; font-weight: 600; color: var(--danger); cursor: pointer; font-family: inherit; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1>🏡 Baklini Home Sale</h1>
+      <p>Admin dashboard · <span id="sync-status" class="sync-badge sync-ok">☁️ Cloud sync</span></p>
+    </div>
+    <span class="header-badge" id="item-count-badge">0 Items</span>
+  </div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="showPage('add')">＋ Add Item</div>
+    <div class="nav-tab" onclick="showPage('listings')">Listings</div>
+    <div class="nav-tab" onclick="showPage('overview')">Overview</div>
+  </div>
+</div>
+
+<div class="page active" id="page-add">
+  <div class="mandatory-note">📋 Buyers pick up only. No delivery. Highest bid wins, or first to pay list price gets it.</div>
+  <div class="card">
+    <div class="section-label">📷 Photos (up to 6 — first is main)</div>
+    <div class="photos-grid" id="photos-grid"></div>
+    <div class="photo-hint">Tap any slot to add a photo. First photo = main listing image. AI analyzes the first photo.</div>
+
+    <div class="api-key-label">🔑 Anthropic API Key</div>
+    <div class="api-key-hint">Enter once from <strong>console.anthropic.com</strong> — saved on this device only.</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input type="password" id="api-key-input" placeholder="sk-ant-..." style="flex:1;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13px;outline:none;font-family:monospace;">
+      <button onclick="saveApiKey()" style="background:var(--cedar);color:white;border:none;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Save</button>
+    </div>
+    <div id="key-status" style="font-size:11px;margin-bottom:10px;color:var(--ink-soft);"></div>
+
+    <button class="ai-analyze-btn" id="analyze-btn" onclick="analyzeWithAI()" disabled>✨ Analyze with AI & Get Pricing</button>
+    <div class="ai-result" id="ai-result">
+      <div class="ai-tag">🤖 AI Suggested</div>
+      <div id="ai-description" style="font-size:14px;line-height:1.6;"></div>
+      <div class="ai-price-row">
+        <span style="font-size:13px;color:var(--ink-soft);">Suggested price:</span>
+        <span class="ai-price-value" id="ai-price"></span>
+      </div>
+      <div style="font-size:12px;color:var(--ink-soft);margin-top:6px;" id="ai-bid-suggest"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-label">📝 Item Details</div>
+    <div class="form-row"><label>Item Name</label><input type="text" id="item-name" placeholder='e.g. Samsung 65" 4K TV' oninput="checkForm()"></div>
+    <div class="form-row">
+      <label>Category</label>
+      <select id="item-category" onchange="checkForm()">
+        <option value="">Select category...</option>
+        <option>📺 Electronics</option><option>🛋️ Furniture</option>
+        <option>🍳 Kitchen & Utensils</option><option>🖼️ Decor & Art</option>
+        <option>🛏️ Bedroom</option><option>🏡 Outdoor & Garden</option>
+        <option>👕 Clothing & Accessories</option><option>📚 Books & Media</option>
+        <option>🧸 Kids & Toys</option><option>🔧 Tools & Hardware</option>
+        <option>🚲 Sports & Fitness</option><option>✨ Other</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label>Condition</label>
+      <select id="item-condition" onchange="checkForm()">
+        <option value="">Select condition...</option>
+        <option>Like New</option><option>Excellent</option><option>Good</option><option>Fair</option>
+      </select>
+    </div>
+    <div class="form-row"><label>Description</label><textarea id="item-description" placeholder="Details, dimensions, age, brand..."></textarea></div>
+    <div class="form-row"><label>Listing Price (Buy It Now) $</label><input type="number" id="item-price" placeholder="0.00" min="0" oninput="checkForm()"></div>
+    <div class="form-row"><label>Notes for Buyers</label><textarea id="item-notes" placeholder="e.g. Needs 2 people to move..." style="min-height:60px;"></textarea></div>
+
+    <div class="form-row">
+      <label>Quantity Available</label>
+      <div class="qty-toggle">
+        <button class="qty-btn active" id="qty-single" onclick="setQty('single')">1 Item</button>
+        <button class="qty-btn" id="qty-multi" onclick="setQty('multi')">Multiple</button>
+      </div>
+      <div id="qty-multi-fields" style="display:none;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div><label style="font-size:11px;font-weight:600;color:var(--ink-soft);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;display:block;">How Many</label><input type="number" id="item-qty" placeholder="e.g. 4" min="2" style="width:100%;border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:15px;outline:none;font-family:inherit;"></div>
+          <div><label style="font-size:11px;font-weight:600;color:var(--ink-soft);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;display:block;">Price Is</label>
+            <select id="item-price-type" style="width:100%;border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:15px;outline:none;font-family:inherit;appearance:none;">
+              <option value="per-unit">Per Unit</option>
+              <option value="bulk">Bulk (all)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label>➕ Extra Notes for AI (optional)</label>
+      <textarea class="extra-prompt-box" id="extra-prompt" placeholder="Add details to help AI price better, e.g. 'Bought for $1200 in 2022, still under warranty, missing remote'..."></textarea>
+      <div style="font-size:11px;color:var(--ink-soft);margin-top:5px;">This adds to the AI's built-in prompt — does not replace it.</div>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="addItem()" disabled>✅ Add to Sale Listings</button>
+  </div>
+</div>
+
+<div class="page" id="page-listings">
+  <div class="filters">
+    <div class="filter-chip active" onclick="filterListings('all',this)">All</div>
+    <div class="filter-chip" onclick="filterListings('📺 Electronics',this)">📺 Electronics</div>
+    <div class="filter-chip" onclick="filterListings('🛋️ Furniture',this)">🛋️ Furniture</div>
+    <div class="filter-chip" onclick="filterListings('🍳 Kitchen & Utensils',this)">🍳 Kitchen</div>
+    <div class="filter-chip" onclick="filterListings('🖼️ Decor & Art',this)">🖼️ Decor</div>
+    <div class="filter-chip" onclick="filterListings('🛏️ Bedroom',this)">🛏️ Bedroom</div>
+    <div class="filter-chip" onclick="filterListings('other',this)">Other</div>
+  </div>
+  <div class="listings-grid" id="listings-grid"></div>
+</div>
+
+<div class="page" id="page-overview">
+  <div class="stats-grid" id="stats-grid"></div>
+  <div class="card">
+    <div class="section-label">📅 Pickup Schedule</div>
+    <div id="pickup-schedule"></div>
+  </div>
+  <div class="card" style="border-color:var(--cedar);background:var(--cedar-pale);">
+    <div class="section-label">📋 Buyer Rules</div>
+    <p style="font-size:13px;line-height:1.8;color:var(--cedar);">• All items sold as-is<br>• Pickup weekdays before 3 PM<br>• Buyer handles disassembly & transport<br>• Highest bid wins OR first to pay listing price<br>• No refunds</p>
+  </div>
+  <div class="card">
+    <div class="section-label">🔗 Buyer Store Link</div>
+    <div style="background:var(--surface);border-radius:10px;padding:12px 14px;font-size:12px;font-family:monospace;word-break:break-all;color:var(--ink-soft);margin-bottom:10px;">https://baklini.github.io/Baklini/buyer-sale-store.html</div>
+    <button class="submit-btn" style="margin:0;" onclick="copyBuyerLink()">📋 Copy Buyer Link</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Edit Modal -->
+<div class="edit-modal-overlay" id="edit-modal" onclick="closeEditModalOutside(event)">
+  <div class="edit-modal-sheet">
+    <div class="edit-handle"></div>
+    <div style="font-size:18px;font-weight:800;margin-bottom:4px;">Edit Listing</div>
+    <div style="font-size:13px;color:var(--ink-soft);margin-bottom:18px;">Changes save instantly to the store.</div>
+
+    <div id="edit-item-name-row">
+      <label class="edit-field-label">Item Name</label>
+      <input class="edit-field-input" id="edit-name" type="text" placeholder="Item name">
+    </div>
+
+    <label class="edit-field-label">Category</label>
+    <select class="edit-field-input" id="edit-category">
+      <option>📺 Electronics</option><option>🛋️ Furniture</option>
+      <option>🍳 Kitchen & Utensils</option><option>🖼️ Decor & Art</option>
+      <option>🛏️ Bedroom</option><option>🏡 Outdoor & Garden</option>
+      <option>👕 Clothing & Accessories</option><option>📚 Books & Media</option>
+      <option>🧸 Kids & Toys</option><option>🔧 Tools & Hardware</option>
+      <option>🚲 Sports & Fitness</option><option>✨ Other</option>
+    </select>
+
+    <label class="edit-field-label">Condition</label>
+    <select class="edit-field-input" id="edit-condition">
+      <option>Like New</option><option>Excellent</option><option>Good</option><option>Fair</option>
+    </select>
+
+    <label class="edit-field-label">Price $ (Buy It Now)</label>
+    <input class="edit-field-input" id="edit-price" type="number" min="0" placeholder="0.00">
+
+    <label class="edit-field-label">Description</label>
+    <textarea class="edit-field-input" id="edit-description" style="min-height:80px;resize:vertical;line-height:1.5;"></textarea>
+
+    <label class="edit-field-label">Notes for Buyers</label>
+    <textarea class="edit-field-input" id="edit-notes" style="min-height:60px;resize:vertical;line-height:1.5;"></textarea>
+
+    <button class="edit-save-btn" onclick="saveEdit()">💾 Save Changes</button>
+    <button class="edit-cancel-btn" onclick="closeEditModal()">Cancel</button>
+  </div>
+</div>
+
+<script>
+const SB_URL = 'https://rvnjdkdkqsqvvmjoevnl.supabase.co';
+const SB_KEY = 'sb_publishable_JU7xwqG9Hr86Tv-tn_fpfQ_G7gt6e61';
+const API_KEY_STORAGE = 'baklini_anthropic_key';
+const MAX_PHOTOS = 6;
+let currentPhotos = [];
+
+async function sbFetch(path, method='GET', body=null) {
+  const opts = {
+    method,
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(SB_URL + '/rest/v1/' + path, opts);
+  if (!r.ok) { const t = await r.text(); throw new Error(t); }
+  const txt = await r.text();
+  return txt ? JSON.parse(txt) : [];
+}
+
+async function getItems() { try { return await sbFetch('items?order=added_at.desc'); } catch { return []; } }
+async function getBids()  { try { return await sbFetch('bids?order=time.desc'); } catch { return []; } }
+
+window.onload = async () => {
+  const saved = localStorage.getItem(API_KEY_STORAGE);
+  if (saved) {
+    document.getElementById('api-key-input').value = saved;
+    document.getElementById('key-status').textContent = '✅ Key saved — ready to analyze';
+    document.getElementById('key-status').style.color = 'var(--cedar)';
+  }
+  renderPhotoSlots();
+  await updateBadge();
+};
+
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key.startsWith('sk-ant-')) { document.getElementById('key-status').textContent = '⚠️ Should start with sk-ant-'; document.getElementById('key-status').style.color='var(--danger)'; return; }
+  localStorage.setItem(API_KEY_STORAGE, key);
+  document.getElementById('key-status').textContent = '✅ Key saved — ready to analyze';
+  document.getElementById('key-status').style.color = 'var(--cedar)';
+  showToast('✅ API key saved!');
+}
+function getApiKey() { return document.getElementById('api-key-input').value.trim() || localStorage.getItem(API_KEY_STORAGE) || ''; }
+
+function setQty(type) {
+  document.getElementById('qty-single').classList.toggle('active', type==='single');
+  document.getElementById('qty-multi').classList.toggle('active', type==='multi');
+  document.getElementById('qty-multi-fields').style.display = type==='multi' ? 'block' : 'none';
+}
+
+async function undoLastBid(itemId) {
+  const bids = await sbFetch(`bids?item_id=eq.${itemId}&type=eq.bid&order=time.desc&limit=1`);
+  if (!bids.length) { showToast('No bids to undo', true); return; }
+  const last = bids[0];
+  if (!confirm(`Undo bid of $${last.amount} by ${last.buyer_first} ${last.buyer_last}?`)) return;
+  await sbFetch(`bids?id=eq.${last.id}`, 'DELETE');
+  // Recalculate min_bid
+  const remaining = await sbFetch(`bids?item_id=eq.${itemId}&type=eq.bid&order=time.desc`);
+  const newMin = remaining.length ? remaining[0].amount + 10 : null;
+  const items = await getItems();
+  const item = items.find(i=>i.id===itemId);
+  await sbFetch(`items?id=eq.${itemId}`, 'PATCH', { min_bid: newMin || (item?.min_bid||null) });
+  showToast('↩ Bid removed');
+  renderListings('all');
+  document.querySelectorAll('.filter-chip').forEach((c,i)=>c.classList.toggle('active',i===0));
+}
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-tab')[['add','listings','overview'].indexOf(name)].classList.add('active');
+  if (name === 'listings') renderListings('all');
+  if (name === 'overview') renderOverview();
+}
+
+function renderPhotoSlots() {
+  const grid = document.getElementById('photos-grid');
+  let html = '';
+  for (let i = 0; i < MAX_PHOTOS; i++) {
+    if (i < currentPhotos.length) {
+      html += `<div class="photo-slot ${i===0?'is-main':''}"><img src="${currentPhotos[i]}"><button class="remove-photo" onclick="removePhoto(${i})">×</button></div>`;
+    } else if (i === currentPhotos.length) {
+      html += `<div class="photo-slot"><input type="file" accept="image/*" onchange="handlePhotoUpload(event)"><div class="slot-empty"><span>📷</span><p>${i===0?'Add main':'Add photo'}</p></div></div>`;
+    } else {
+      html += `<div class="photo-slot" style="opacity:0.3;"><div class="slot-empty"><span>📷</span></div></div>`;
+    }
+  }
+  grid.innerHTML = html;
+  document.getElementById('analyze-btn').disabled = currentPhotos.length === 0;
+}
+
+function handlePhotoUpload(e) {
+  const file = e.target.files[0];
+  if (!file || currentPhotos.length >= MAX_PHOTOS) return;
+  const reader = new FileReader();
+  reader.onload = ev => { currentPhotos.push(ev.target.result); renderPhotoSlots(); checkForm(); };
+  reader.readAsDataURL(file);
+}
+function removePhoto(i) { currentPhotos.splice(i,1); renderPhotoSlots(); checkForm(); }
+
+async function analyzeWithAI() {
+  const apiKey = getApiKey();
+  if (!apiKey) { showToast('Paste your Anthropic API key first', true); return; }
+  if (!currentPhotos.length) { showToast('Add at least one photo first', true); return; }
+  const btn = document.getElementById('analyze-btn');
+  btn.disabled = true; btn.textContent = '⏳ Analyzing…';
+  const mainPhoto = currentPhotos[0];
+  const imageData = mainPhoto.split(',')[1];
+  const mediaType = mainPhoto.split(';')[0].split(':')[1];
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5', max_tokens: 1000,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: mediaType, data: imageData } },
+          { type: 'text', text: (() => {
+            const extra = document.getElementById('extra-prompt').value.trim();
+            const base = `Resale pricing expert. Analyze this household item. Respond ONLY with valid JSON no markdown:\n{"itemName":"name","category":"Electronics|Furniture|Kitchen & Utensils|Decor & Art|Bedroom|Outdoor & Garden|Other","condition":"Like New|Excellent|Good|Fair","description":"2-3 sentence buyer description","listPrice":150,"minBid":90,"priceRationale":"one sentence"}\nBase on US secondhand market. Pickup-only sale.`;
+            return extra ? base + '\n\nAdditional context from seller: ' + extra : base;
+          })() }
+        ]}]
+      })
+    });
+    if (!response.ok) { const t = await response.text(); throw new Error(t.slice(0,200)); }
+    const data = await response.json();
+    const text = data.content.map(b=>b.text||'').join('');
+    const result = JSON.parse(text.replace(/```json|```/g,'').trim());
+    document.getElementById('ai-result').classList.add('show');
+    document.getElementById('ai-description').textContent = result.description;
+    document.getElementById('ai-price').textContent = '$' + result.listPrice.toLocaleString();
+    document.getElementById('ai-bid-suggest').textContent = '💡 Min bid: $' + result.minBid + ' — ' + result.priceRationale;
+    if (!document.getElementById('item-name').value) document.getElementById('item-name').value = result.itemName;
+    if (!document.getElementById('item-description').value) document.getElementById('item-description').value = result.description;
+    if (!document.getElementById('item-price').value) document.getElementById('item-price').value = result.listPrice;
+    if (!document.getElementById('item-min-bid').value) document.getElementById('item-min-bid').value = result.minBid;
+    const sel = document.getElementById('item-category');
+    for (let opt of sel.options) { if (opt.value.toLowerCase().includes(result.category.toLowerCase().split(' ')[0])) { sel.value=opt.value; break; } }
+    const condSel = document.getElementById('item-condition');
+    for (let opt of condSel.options) { if (opt.value===result.condition) { condSel.value=opt.value; break; } }
+    checkForm();
+    btn.disabled=false; btn.textContent='✨ Re-Analyze';
+  } catch(err) {
+    btn.disabled=false; btn.textContent='✨ Analyze with AI & Get Pricing';
+    showToast('AI error: ' + err.message.slice(0,80), true);
+  }
+}
+
+function checkForm() {
+  const ok = document.getElementById('item-name').value.trim() && document.getElementById('item-category').value && document.getElementById('item-condition').value && document.getElementById('item-price').value;
+  document.getElementById('submit-btn').disabled = !ok;
+}
+
+function compressPhoto(base64, callback) {
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    const maxW = 800; const scale = Math.min(1, maxW/img.width);
+    canvas.width = Math.round(img.width*scale); canvas.height = Math.round(img.height*scale);
+    canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+    callback(canvas.toDataURL('image/jpeg',0.72));
+  };
+  img.src = base64;
+}
+
+async function addItem() {
+  const btn = document.getElementById('submit-btn');
+  btn.disabled=true; btn.textContent='⏳ Saving…';
+  const compressed = await Promise.all(currentPhotos.map(p => new Promise(res => compressPhoto(p,res))));
+  const item = {
+    id: Date.now(),
+    name: document.getElementById('item-name').value.trim(),
+    category: document.getElementById('item-category').value,
+    condition: document.getElementById('item-condition').value,
+    description: document.getElementById('item-description').value.trim(),
+    price: parseFloat(document.getElementById('item-price').value),
+    min_bid: null,
+    notes: document.getElementById('item-notes').value.trim(),
+    photos: JSON.stringify(compressed),
+    status: 'available',
+    added_at: new Date().toISOString(),
+    quantity: document.getElementById('qty-multi').classList.contains('active') ? parseInt(document.getElementById('item-qty').value)||1 : 1,
+    price_type: document.getElementById('item-price-type').value
+  };
+  try {
+    await sbFetch('items', 'POST', item);
+    await updateBadge();
+    resetForm();
+    showToast('✅ Item added to listings!');
+  } catch(e) {
+    btn.disabled=false; btn.textContent='✅ Add to Sale Listings';
+    showToast('Error saving: ' + e.message.slice(0,80), true);
+  }
+}
+
+function resetForm() {
+  currentPhotos=[]; renderPhotoSlots();
+  ['item-name','item-description','item-price','item-min-bid','item-notes'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('item-category').value='';
+  document.getElementById('item-condition').value='';
+  document.getElementById('extra-prompt').value='';
+  document.getElementById('ai-result').classList.remove('show');
+  setQty('single');
+  document.getElementById('submit-btn').disabled=true;
+  document.getElementById('submit-btn').textContent='✅ Add to Sale Listings';
+}
+
+async function updateBadge() {
+  const items = await getItems();
+  document.getElementById('item-count-badge').textContent = items.length + ' Item' + (items.length!==1?'s':'');
+}
+
+function getCatEmoji(cat) {
+  if (!cat) return '📦';
+  if (cat.includes('Electronics')) return '📺';
+  if (cat.includes('Furniture')) return '🛋️';
+  if (cat.includes('Kitchen')) return '🍳';
+  if (cat.includes('Decor')) return '🖼️';
+  if (cat.includes('Bedroom')) return '🛏️';
+  return '📦';
+}
+
+async function renderListings(filter) {
+  const grid = document.getElementById('listings-grid');
+  grid.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-text">Loading…</div></div>';
+  const items = await getItems();
+  const bids = await getBids();
+  const main = ['📺 Electronics','🛋️ Furniture','🍳 Kitchen & Utensils','🖼️ Decor & Art','🛏️ Bedroom'];
+  const filtered = filter==='all' ? items : filter==='other' ? items.filter(i=>!main.includes(i.category)) : items.filter(i=>i.category===filter);
+  if (!filtered.length) { grid.innerHTML='<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-text">No items yet</div></div>'; return; }
+  grid.innerHTML = filtered.map(item => {
+    const itemBids = bids.filter(b=>b.item_id===item.id).sort((a,b)=>b.amount-a.amount);
+    const topBid = itemBids[0];
+    const statusClass = item.status==='sold'?'status-sold':'status-available';
+    const statusText = item.status==='sold'?`🔴 Sold to ${item.sold_to||'buyer'}`:'🟢 Available';
+    const photos = item.photos ? JSON.parse(item.photos) : [];
+    const thumb = photos[0] ? `<img src="${photos[0]}" alt="${item.name}">` : `<div style="width:90px;height:90px;display:flex;align-items:center;justify-content:center;font-size:32px;">${getCatEmoji(item.category)}</div>`;
+    const photoCount = photos.length;
+    return `<div>
+      <div class="listing-card">
+        <div class="listing-top">
+          <div class="listing-thumb">${thumb}</div>
+          <div class="listing-info">
+            <div class="listing-name">${item.name}</div>
+            <div class="listing-cat">${item.category} · ${item.condition}${photoCount>1?' · '+photoCount+' photos':''}${item.quantity>1?' · Qty: '+item.quantity+(item.price_type==='bulk'?' (bulk)':' ea'):''}</div>
+            <div class="listing-prices"><div class="listing-price">$${item.price.toLocaleString()}</div></div>
+            <div class="listing-status ${statusClass}">${statusText}</div>
+          </div>
+        </div>
+        <div class="listing-actions">
+<button class="action-btn" onclick="openEditModal(${item.id})">✏️ Edit</button>
+          <button class="action-btn primary" onclick="markSold(${item.id},'${item.status}')">${item.status==='sold'?'Relist':'✓ Sold'}</button>
+          <button class="action-btn danger" onclick="deleteItem(${item.id})">Del</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterListings(cat,el) {
+  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderListings(cat);
+}
+
+async function markSold(id, currentStatus) {
+  const newStatus = currentStatus==='sold' ? 'available' : 'sold';
+  await sbFetch(`items?id=eq.${id}`, 'PATCH', { status: newStatus });
+  renderListings('all');
+  document.querySelectorAll('.filter-chip').forEach((c,i)=>c.classList.toggle('active',i===0));
+  showToast(newStatus==='sold'?'✅ Marked sold':'↩ Relisted');
+}
+
+async function deleteItem(id) {
+  if (!confirm('Remove this item?')) return;
+  await sbFetch(`items?id=eq.${id}`, 'DELETE');
+  await updateBadge();
+  renderListings('all');
+  document.querySelectorAll('.filter-chip').forEach((c,i)=>c.classList.toggle('active',i===0));
+}
+
+async function viewBids(id) {
+  const bids = (await getBids()).filter(b=>b.item_id===id).sort((a,b)=>b.amount-a.amount);
+  const items = await getItems();
+  const item = items.find(x=>x.id===id);
+  if (!bids.length) { showToast('No bids yet for '+item.name); return; }
+  alert(`Bids for "${item.name}":\n\n` + bids.map(b=>`${b.buyer_first||''} ${b.buyer_last||''} — $${b.amount} (${b.type})${b.pickup?'\nPickup: '+b.pickup:''}${b.buyer_phone?'\nPhone: '+b.buyer_phone:''}`).join('\n\n'));
+}
+
+async function renderOverview() {
+  const items = await getItems();
+  const bids = await getBids();
+  const sold = items.filter(i=>i.status==='sold');
+  const available = items.filter(i=>i.status!=='sold');
+  const totalValue = items.reduce((s,i)=>s+i.price,0);
+  const soldValue = sold.reduce((s,i)=>s+(i.sold_price||i.price),0);
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-box"><div class="stat-num">${items.length}</div><div class="stat-label">Total Items</div></div>
+    <div class="stat-box"><div class="stat-num">${available.length}</div><div class="stat-label">Available</div></div>
+    <div class="stat-box"><div class="stat-num">$${totalValue.toLocaleString()}</div><div class="stat-label">Total List Value</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--gold)">$${soldValue.toLocaleString()}</div><div class="stat-label">Sold Value</div></div>`;
+  const pickups = bids.filter(b=>b.type==='buy-now'&&b.pickup).sort((a,b)=>a.pickup.localeCompare(b.pickup));
+  const schedEl = document.getElementById('pickup-schedule');
+  schedEl.innerHTML = pickups.length ? pickups.map(b=>{
+    const item = items.find(i=>i.id===b.item_id);
+    return `<div class="pickup-row"><div style="font-size:20px;">📦</div><div><div style="font-size:14px;font-weight:700;">${b.buyer_first||''} ${b.buyer_last||''}</div><div style="font-size:12px;color:var(--cedar);">${item?item.name:'Item'} — $${b.amount}</div><div style="font-size:12px;color:var(--ink-soft);">📅 ${b.pickup}</div>${b.buyer_phone?`<div style="font-size:12px;color:var(--ink-soft);">📞 ${b.buyer_phone}</div>`:''}</div></div>`;
+  }).join('') : '<p style="font-size:14px;color:var(--ink-soft);">No pickups scheduled yet.</p>';
+
+}
+
+function copyBuyerLink() { navigator.clipboard.writeText('https://baklini.github.io/Baklini/buyer-sale-store.html').catch(()=>{}); showToast('📋 Buyer link copied!'); }
+
+let editingItemId = null;
+
+async function openEditModal(id) {
+  const items = await getItems();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  editingItemId = id;
+  document.getElementById('edit-name').value = item.name || '';
+  document.getElementById('edit-category').value = item.category || '';
+  document.getElementById('edit-condition').value = item.condition || '';
+  document.getElementById('edit-price').value = item.price || '';
+  document.getElementById('edit-description').value = item.description || '';
+  document.getElementById('edit-notes').value = item.notes || '';
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+async function saveEdit() {
+  if (!editingItemId) return;
+  const name = document.getElementById('edit-name').value.trim();
+  const price = parseFloat(document.getElementById('edit-price').value);
+  if (!name) { showToast('Name cannot be empty', true); return; }
+  if (!price || isNaN(price)) { showToast('Enter a valid price', true); return; }
+  try {
+    await sbFetch(`items?id=eq.${editingItemId}`, 'PATCH', {
+      name,
+      category: document.getElementById('edit-category').value,
+      condition: document.getElementById('edit-condition').value,
+      price,
+      description: document.getElementById('edit-description').value.trim(),
+      notes: document.getElementById('edit-notes').value.trim()
+    });
+    closeEditModal();
+    showToast('✅ Listing updated!');
+    renderListings('all');
+    document.querySelectorAll('.filter-chip').forEach((c,i) => c.classList.toggle('active', i===0));
+  } catch(e) {
+    showToast('Error: ' + e.message.slice(0,80), true);
+  }
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').classList.remove('open');
+  editingItemId = null;
+}
+
+function closeEditModalOutside(e) {
+  if (e.target === document.getElementById('edit-modal')) closeEditModal();
+}
+
+function showToast(msg, isError=false) {
+  const t = document.getElementById('toast');
+  t.textContent=msg; t.style.background=isError?'var(--danger)':'var(--cedar)';
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000);
+}
+</script>
+</body>
+</html>
