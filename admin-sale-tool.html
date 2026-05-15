@@ -456,6 +456,7 @@ async function analyzeWithAI() {
       if (response.status === 401) friendlyMsg = '🔑 API key rejected — paste a fresh key above and Save';
       else if (response.status === 400) friendlyMsg = '📷 Photo was rejected by AI — try a clearer photo';
       else if (response.status === 429) friendlyMsg = '⏳ Too many requests — wait a moment and try again';
+      else if (response.status === 529) friendlyMsg = '🔴 Anthropic servers are busy — wait 2-3 minutes and try again';
       else if (errText.includes('invalid_request')) friendlyMsg = '📷 Photo format issue — remove photo and re-add it';
       throw new Error(friendlyMsg);
     }
