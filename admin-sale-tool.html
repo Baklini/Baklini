@@ -35,6 +35,9 @@
   .photo-slot .remove-photo { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.65); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; font-size: 13px; cursor: pointer; line-height: 22px; text-align: center; }
   .photo-slot.is-main::after { content: 'MAIN'; position: absolute; bottom: 0; left: 0; right: 0; background: rgba(45,74,62,0.85); color: white; font-size: 9px; font-weight: 700; text-align: center; padding: 3px 0; letter-spacing: 1px; }
   .photo-slot input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .set-main-btn { position: absolute; bottom: 4px; left: 4px; background: rgba(201,151,58,0.9); color: white; border: none; border-radius: 6px; padding: 2px 7px; font-size: 9px; font-weight: 700; cursor: pointer; letter-spacing: .5px; text-transform: uppercase; }
+  .multi-upload-btn { width: 100%; background: var(--cedar-pale); border: 1.5px dashed var(--cedar); border-radius: 12px; padding: 14px; font-size: 14px; font-weight: 600; color: var(--cedar); cursor: pointer; margin-bottom: 10px; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; position: relative; }
+  .multi-upload-btn input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
   .photo-hint { font-size: 12px; color: var(--ink-soft); margin-bottom: 14px; line-height: 1.5; }
   .ai-analyze-btn { width: 100%; background: var(--cedar); color: white; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; font-family: inherit; }
   .ai-analyze-btn:disabled { background: #aaa; cursor: not-allowed; }
@@ -131,8 +134,12 @@
   <div class="mandatory-note">📋 Buyers pick up only. No delivery. Highest bid wins, or first to pay list price gets it.</div>
   <div class="card">
     <div class="section-label">📷 Photos (up to 6 — first is main)</div>
+    <div class="multi-upload-btn">
+      <input type="file" accept="image/*" multiple onchange="handleMultiUpload(event)">
+      📁 Tap to select multiple photos at once
+    </div>
     <div class="photos-grid" id="photos-grid"></div>
-    <div class="photo-hint">Tap any slot to add a photo. First photo = main listing image. AI analyzes the first photo.</div>
+    <div class="photo-hint">Tap ⭐ on any photo to make it the main listing image. AI always analyzes the main photo.</div>
 
     <div class="api-key-label">🔑 Anthropic API Key</div>
     <div class="api-key-hint">Enter once from <strong>console.anthropic.com</strong> — saved on this device only.</div>
@@ -362,7 +369,12 @@ function renderPhotoSlots() {
   let html = '';
   for (let i = 0; i < MAX_PHOTOS; i++) {
     if (i < currentPhotos.length) {
-      html += `<div class="photo-slot ${i===0?'is-main':''}"><img src="${currentPhotos[i]}"><button class="remove-photo" onclick="removePhoto(${i})">×</button></div>`;
+      const isMain = i === 0;
+      html += `<div class="photo-slot ${isMain?'is-main':''}">
+        <img src="${currentPhotos[i]}">
+        <button class="remove-photo" onclick="removePhoto(${i})">×</button>
+        ${!isMain ? `<button class="set-main-btn" onclick="setMainPhoto(${i})">⭐ Main</button>` : ''}
+      </div>`;
     } else if (i === currentPhotos.length) {
       html += `<div class="photo-slot"><input type="file" accept="image/*" onchange="handlePhotoUpload(event)"><div class="slot-empty"><span>📷</span><p>${i===0?'Add main':'Add photo'}</p></div></div>`;
     } else {
@@ -381,6 +393,32 @@ function handlePhotoUpload(e) {
   reader.readAsDataURL(file);
 }
 function removePhoto(i) { currentPhotos.splice(i,1); renderPhotoSlots(); checkForm(); }
+
+function setMainPhoto(i) {
+  // Move photo at index i to position 0
+  const photo = currentPhotos.splice(i, 1)[0];
+  currentPhotos.unshift(photo);
+  renderPhotoSlots();
+  showToast('⭐ Main photo updated!');
+}
+
+function handleMultiUpload(e) {
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+  const remaining = MAX_PHOTOS - currentPhotos.length;
+  const toLoad = files.slice(0, remaining);
+  if (files.length > remaining) showToast(`Only ${remaining} more photo${remaining!==1?'s':''} fit — added first ${remaining}`, false);
+  let loaded = 0;
+  toLoad.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      currentPhotos.push(ev.target.result);
+      loaded++;
+      if (loaded === toLoad.length) { renderPhotoSlots(); checkForm(); }
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 async function analyzeWithAI() {
   const apiKey = getApiKey();
