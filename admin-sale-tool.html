@@ -150,7 +150,7 @@
         <span style="font-size:13px;color:var(--ink-soft);">Suggested price:</span>
         <span class="ai-price-value" id="ai-price"></span>
       </div>
-      <div style="font-size:12px;color:var(--ink-soft);margin-top:6px;" id="ai-bid-suggest"></div>
+
     </div>
   </div>
 
@@ -401,7 +401,7 @@ async function analyzeWithAI() {
           { type: 'image', source: { type: 'base64', media_type: mediaType, data: imageData } },
           { type: 'text', text: (() => {
             const extra = document.getElementById('extra-prompt').value.trim();
-            const base = `Resale pricing expert. Analyze this household item. Respond ONLY with valid JSON no markdown:\n{"itemName":"name","category":"Electronics|Furniture|Kitchen & Utensils|Decor & Art|Bedroom|Outdoor & Garden|Other","condition":"Like New|Excellent|Good|Fair","description":"2-3 sentence buyer description","listPrice":150,"minBid":90,"priceRationale":"one sentence"}\nBase on US secondhand market. Pickup-only sale.`;
+            const base = `You are a resale pricing expert. Analyze this household item photo. Respond ONLY with valid JSON, no markdown, no extra text:\n{"itemName":"short name","category":"Electronics|Furniture|Kitchen & Utensils|Decor & Art|Bedroom|Outdoor & Garden|Clothing|Books & Media|Kids & Toys|Tools & Hardware|Sports & Fitness|Other","condition":"Like New|Excellent|Good|Fair","description":"2-3 sentence buyer-facing description with brand, features, and condition","salePrice":150}\nBase price on current US secondhand market (Facebook Marketplace/OfferUp). Be realistic, not sentimental. This is a pickup-only private home sale.`;
             return extra ? base + '\n\nAdditional context from seller: ' + extra : base;
           })() }
         ]}]
@@ -413,12 +413,11 @@ async function analyzeWithAI() {
     const result = JSON.parse(text.replace(/```json|```/g,'').trim());
     document.getElementById('ai-result').classList.add('show');
     document.getElementById('ai-description').textContent = result.description;
-    document.getElementById('ai-price').textContent = '$' + result.listPrice.toLocaleString();
-    document.getElementById('ai-bid-suggest').textContent = '💡 Min bid: $' + result.minBid + ' — ' + result.priceRationale;
+    document.getElementById('ai-price').textContent = '$' + (result.salePrice || result.listPrice || 0).toLocaleString();
+    document.getElementById('ai-bid-suggest').textContent = '💡 ' + result.priceRationale || '';
     if (!document.getElementById('item-name').value) document.getElementById('item-name').value = result.itemName;
     if (!document.getElementById('item-description').value) document.getElementById('item-description').value = result.description;
-    if (!document.getElementById('item-price').value) document.getElementById('item-price').value = result.listPrice;
-    if (!document.getElementById('item-min-bid').value) document.getElementById('item-min-bid').value = result.minBid;
+    if (!document.getElementById('item-price').value) document.getElementById('item-price').value = result.salePrice || result.listPrice;
     const sel = document.getElementById('item-category');
     for (let opt of sel.options) { if (opt.value.toLowerCase().includes(result.category.toLowerCase().split(' ')[0])) { sel.value=opt.value; break; } }
     const condSel = document.getElementById('item-condition');
